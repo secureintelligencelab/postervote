@@ -3,201 +3,120 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PosterVote — Admin</title>
+<title>PosterVote &mdash; Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
-<!-- Firebase v10 (modular via compat shim for simplicity) -->
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-<!-- PapaParse for CSV -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#0d0f14;--ink2:#1e2230;--ink3:#3a3f52;
-  --muted:#7a8099;--border:#2e3347;
-  --surface:#181c28;--surface2:#1f2436;--surface3:#262d42;
-  --accent:#5b6cff;--accent2:#8b9cff;--aglow:rgba(91,108,255,.22);
-  --gold:#f6c347;--gold2:#ffda80;--green:#3ecf8e;--red:#ff5c72;
-  --white:#f0f2ff;
-  --rS:6px;--r:12px;--rL:20px;
-  --fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif;
-}
+:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--g2:#ffda80;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--rS:6px;--r:12px;--rL:20px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
 html{font-size:16px;scroll-behavior:smooth}
-body{background:var(--ink);color:var(--white);font-family:var(--fB);line-height:1.6;min-height:100vh}
+body{background:var(--ink);color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
 h1,h2,h3,h4{font-family:var(--fH);line-height:1.2;font-weight:700}
-button{cursor:pointer;border:none;outline:none;font-family:var(--fB);transition:all .18s ease}
-input,select,textarea{font-family:var(--fB);outline:none;border:1.5px solid var(--border);background:var(--surface3);color:var(--white);border-radius:var(--rS);padding:9px 13px;font-size:.94rem;width:100%;transition:border-color .15s}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-input::placeholder{color:var(--muted)}
-select option{background:var(--surface3)}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--ink2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-/* Layout */
+button{cursor:pointer;border:none;outline:none;font-family:var(--fB);transition:all .18s}
+input,select,textarea{font-family:var(--fB);outline:none;border:1.5px solid var(--bdr);background:var(--s3);color:var(--wh);border-radius:var(--rS);padding:9px 13px;font-size:.94rem;width:100%;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--ac)}
+input::placeholder{color:var(--mu)}
+select option{background:var(--s3)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--ink2)}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
 .page{min-height:100vh;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--ink2);position:sticky;top:0;z-index:100}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;border-bottom:1px solid var(--bdr);background:var(--ink2);position:sticky;top:0;z-index:100}
 .brand{font-family:var(--fH);font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px}
-.content{flex:1;padding:28px;max-width:1180px;margin:0 auto;width:100%}
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px}
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rS);font-size:.88rem;font-weight:600;font-family:var(--fH);letter-spacing:.02em;cursor:pointer;transition:all .18s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:var(--accent2);box-shadow:0 0 18px var(--aglow);transform:translateY(-1px)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-secondary{background:var(--surface3);color:var(--white);border:1px solid var(--border)}
-.btn-secondary:hover{border-color:var(--accent)}
-.btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);font-size:.8rem;padding:5px 10px}
-.btn-danger:hover{background:rgba(255,92,114,.1)}
-.btn-gold{background:var(--gold);color:var(--ink)}
-.btn-gold:hover{background:var(--gold2);box-shadow:0 0 18px rgba(246,195,71,.3)}
-.btn-sm{padding:5px 12px;font-size:.8rem}
-/* Badges */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:.75rem;font-weight:600;font-family:var(--fM)}
-.b-accent{background:var(--aglow);color:var(--accent2);border:1px solid var(--accent)}
-.b-green{background:rgba(62,207,142,.1);color:var(--green);border:1px solid var(--green)}
-.b-gold{background:rgba(246,195,71,.1);color:var(--gold);border:1px solid var(--gold)}
-.b-red{background:rgba(255,92,114,.1);color:var(--red);border:1px solid var(--red)}
-.b-muted{background:var(--surface3);color:var(--muted);border:1px solid var(--border)}
-/* Alerts */
-.alert{padding:11px 15px;border-radius:var(--rS);font-size:.86rem;display:flex;align-items:flex-start;gap:9px;margin-bottom:14px}
-.alert-err{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--red)}
-.alert-ok{background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3);color:var(--green)}
-.alert-info{background:var(--aglow);border:1px solid rgba(91,108,255,.3);color:var(--accent2)}
-/* Modal */
-.overlay{position:fixed;inset:0;background:rgba(10,12,20,.87);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:18px}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--rL);padding:30px;width:100%;max-width:520px;animation:fadeUp .22s ease;max-height:90vh;overflow-y:auto}
-.modal.wide{max-width:660px}
-/* Table */
+.content{flex:1;padding:26px;max-width:1180px;margin:0 auto;width:100%}
+.card{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);padding:20px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:var(--rS);font-size:.87rem;font-weight:600;font-family:var(--fH);cursor:pointer;transition:all .18s;white-space:nowrap}
+.bp{background:var(--ac);color:#fff}.bp:hover{background:var(--a2);box-shadow:0 0 16px var(--ag);transform:translateY(-1px)}.bp:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.bs{background:var(--s3);color:var(--wh);border:1px solid var(--bdr)}.bs:hover{border-color:var(--ac)}
+.bd{background:transparent;color:var(--rd);border:1px solid var(--rd)}.bd:hover{background:rgba(255,92,114,.1)}
+.bgold{background:var(--go);color:var(--ink)}.bgold:hover{background:var(--g2)}
+.bsm{padding:5px 11px;font-size:.79rem}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:.74rem;font-weight:600;font-family:var(--fM)}
+.ba{background:var(--ag);color:var(--a2);border:1px solid var(--ac)}
+.bn{background:var(--s3);color:var(--mu);border:1px solid var(--bdr)}
+.bgn{background:rgba(62,207,142,.1);color:var(--gn);border:1px solid var(--gn)}
+.bgo{background:rgba(246,195,71,.1);color:var(--go);border:1px solid var(--go)}
+.brd{background:rgba(255,92,114,.1);color:var(--rd);border:1px solid var(--rd)}
+.alert{padding:10px 14px;border-radius:var(--rS);font-size:.84rem;margin-bottom:12px}
+.ae{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--rd)}
+.ao{background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3);color:var(--gn)}
+.ai{background:var(--ag);border:1px solid rgba(91,108,255,.3);color:var(--a2)}
+.overlay{position:fixed;inset:0;background:rgba(8,10,18,.9);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.modal{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--rL);padding:28px;width:100%;max-width:520px;animation:fu .22s ease;max-height:92vh;overflow-y:auto}
+.modal.wide{max-width:680px}.modal.xl{max-width:860px}
 table{width:100%;border-collapse:collapse}
-th{font-family:var(--fM);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border)}
-td{padding:10px 11px;border-bottom:1px solid rgba(46,51,71,.5);font-size:.88rem;vertical-align:middle}
+th{font-family:var(--fM);font-size:.7rem;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--bdr)}
+td{padding:9px 10px;border-bottom:1px solid rgba(46,51,71,.45);font-size:.87rem;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tbody tr:hover{background:var(--surface2)}
-/* Tabs */
-.tabs{display:flex;gap:3px;background:var(--surface2);padding:4px;border-radius:var(--r);border:1px solid var(--border);width:fit-content;margin-bottom:24px}
-.tab-btn{padding:7px 16px;border-radius:var(--rS);font-size:.85rem;font-weight:600;font-family:var(--fH);color:var(--muted);background:transparent;transition:all .15s}
-.tab-btn.active{background:var(--accent);color:#fff}
-.tab-btn:hover:not(.active){color:var(--white)}
-/* Form */
-.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
-.fl{font-size:.76rem;font-family:var(--fM);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-/* Grid */
-.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-/* Progress */
-.pbar-w{height:7px;background:var(--surface3);border-radius:100px;overflow:hidden;flex:1}
-.pbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease}
-/* Copy box */
-.copybox{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rS);padding:9px 13px}
-.copybox code{flex:1;font-family:var(--fM);font-size:.82rem;color:var(--accent2);word-break:break-all}
-/* Misc */
-.mono{font-family:var(--fM)}
-.muted{color:var(--muted)}
-.flex{display:flex;align-items:center;gap:10px}
-.between{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-.center{display:flex;align-items:center;justify-content:center;min-height:100vh}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.fu{animation:fadeUp .35s ease}
+tbody tr:hover{background:var(--s2)}
+.tabs{display:flex;gap:3px;background:var(--s2);padding:4px;border-radius:var(--r);border:1px solid var(--bdr);width:fit-content;margin-bottom:22px;flex-wrap:wrap}
+.tab-btn{padding:7px 14px;border-radius:var(--rS);font-size:.83rem;font-weight:600;font-family:var(--fH);color:var(--mu);background:transparent;transition:all .15s}
+.tab-btn.active{background:var(--ac);color:#fff}
+.tab-btn:hover:not(.active){color:var(--wh)}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.fl{font-size:.74rem;font-family:var(--fM);color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.pbar-w{height:6px;background:var(--s3);border-radius:100px;overflow:hidden;flex:1}
+.pbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--ac),var(--a2));transition:width .5s}
+.copybox{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rS);padding:8px 12px}
+.copybox code{flex:1;font-family:var(--fM);font-size:.79rem;color:var(--a2);word-break:break-all}
+.mono{font-family:var(--fM)} .mu{color:var(--mu)}
+.flex{display:flex;align-items:center;gap:9px}
+.between{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite}
 .hidden{display:none!important}
-/* Checkbox list */
-.ck-list{max-height:210px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--rS);background:var(--surface3)}
-.ck-item{display:flex;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;border-bottom:1px solid rgba(46,51,71,.4);transition:background .12s}
+.ck-list{max-height:200px;overflow-y:auto;border:1.5px solid var(--bdr);border-radius:var(--rS);background:var(--s3)}
+.ck-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(46,51,71,.35);transition:background .12s}
 .ck-item:last-child{border-bottom:none}
-.ck-item:hover{background:var(--surface2)}
-.ck-item.checked{background:var(--aglow)}
-.ck-item input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--accent)}
-/* Stars */
-.stars{display:flex;gap:4px}
-.star{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;background:var(--surface3);border:1px solid var(--border);transition:all .12s}
-.star.on{background:var(--gold);border-color:var(--gold)}
-/* Radio group */
-.radio-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border:2px solid var(--border);border-radius:var(--rS);background:var(--surface2);cursor:pointer;transition:all .15s;margin-bottom:8px}
-.radio-item.sel{border-color:var(--accent);background:var(--aglow)}
-.radio-item input[type=radio]{width:auto;margin-top:3px;accent-color:var(--accent)}
-/* Setup page */
-.setup-wrap{max-width:540px;margin:60px auto;padding:20px}
-@media(max-width:700px){.g2,.g3{grid-template-columns:1fr}.content{padding:14px}.topbar{padding:11px 14px}}
+.ck-item:hover{background:var(--s2)}.ck-item.checked{background:var(--ag)}
+.ck-item input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--ac)}
+.qr-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;text-align:center}
+.qr-card canvas{border-radius:6px;margin:8px auto;display:block}
+@media print{.no-print{display:none!important}body{background:#fff;color:#000}.qr-card{border:1px solid #ccc;page-break-inside:avoid;background:#fff}canvas{border-radius:4px}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fu .32s ease}
+@media(max-width:700px){.g2,.g3{grid-template-columns:1fr}.content{padding:13px}.topbar{padding:10px 13px}}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     VIEWS  (shown/hidden via JS)
-════════════════════════════════════════════════════════════════════════════ -->
-
-<!-- SETUP CONFIG -->
-<div id="view-setup">
-  <div class="setup-wrap fu">
-    <div style="text-align:center;margin-bottom:36px">
-      <div style="font-size:3rem;margin-bottom:10px">🏆</div>
-      <h1 style="font-size:1.9rem;margin-bottom:6px">PosterVote</h1>
-      <p class="muted">One-time Firebase configuration</p>
-    </div>
-    <div class="card">
-      <h2 style="font-size:1.1rem;margin-bottom:6px">Firebase Setup</h2>
-      <p class="muted" style="font-size:.85rem;margin-bottom:20px">
-        Paste your Firebase project credentials. These are stored only in your browser (localStorage) and never sent anywhere else.
-        <br><br>
-        Get them from: <strong>Firebase Console → Project Settings → Your Apps → Web</strong>
-      </p>
-      <div id="setup-err" class="alert alert-err hidden"></div>
-      <div class="fg"><label class="fl">API Key</label><input id="cfg-apiKey" placeholder="AIzaSy..."/></div>
-      <div class="fg"><label class="fl">Auth Domain</label><input id="cfg-authDomain" placeholder="yourproject.firebaseapp.com"/></div>
-      <div class="fg"><label class="fl">Project ID</label><input id="cfg-projectId" placeholder="your-project-id"/></div>
-      <div class="fg"><label class="fl">Storage Bucket</label><input id="cfg-storageBucket" placeholder="yourproject.appspot.com"/></div>
-      <div class="fg"><label class="fl">Messaging Sender ID</label><input id="cfg-senderId" placeholder="123456789"/></div>
-      <div class="fg"><label class="fl">App ID</label><input id="cfg-appId" placeholder="1:123:web:abc"/></div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="saveConfig()">Save & Continue →</button>
-    </div>
-    <p class="muted" style="text-align:center;font-size:.78rem;margin-top:16px">
-      Config is saved in your browser. <a href="#" onclick="clearConfig()" style="color:var(--accent2)">Clear saved config</a>
-    </p>
+<!-- LOGIN -->
+<div id="view-login">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.16) 0%,var(--ink) 70%);padding:20px">
+<div class="fu" style="width:100%;max-width:380px">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:15px;background:var(--ac);margin-bottom:12px;font-size:1.8rem;box-shadow:0 0 28px var(--ag)">&#127942;</div>
+    <h1 style="font-size:1.8rem;margin-bottom:4px">PosterVote</h1>
+    <p class="mu" style="font-size:.88rem">Poster Session Voting System</p>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;margin-bottom:18px">Admin Login</h2>
+    <div id="login-err" class="alert ae hidden"></div>
+    <div class="fg"><label class="fl">Email</label><input id="login-email" type="email" placeholder="admin@school.edu" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="fg"><label class="fl">Password</label><input id="login-pw" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn bp" id="login-btn" style="width:100%;justify-content:center;margin-top:8px;padding:11px" onclick="doLogin()">Sign In &#8594;</button>
+    <p class="mu" style="font-size:.75rem;margin-top:11px;text-align:center">Firebase config is embedded in this HTML file.</p>
   </div>
 </div>
-
-<!-- LOGIN -->
-<div id="view-login" class="hidden">
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.15) 0%,var(--ink) 70%);padding:20px">
-    <div class="fu" style="width:100%;max-width:380px">
-      <div style="text-align:center;margin-bottom:36px">
-        <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:15px;background:var(--accent);margin-bottom:14px;font-size:1.7rem;box-shadow:0 0 28px var(--aglow)">🏆</div>
-        <h1 style="font-size:1.8rem;margin-bottom:4px">PosterVote</h1>
-        <p class="muted" style="font-size:.88rem">Poster Session Voting System</p>
-      </div>
-      <div class="card">
-        <h2 style="font-size:1.05rem;margin-bottom:20px">Admin Login</h2>
-        <div id="login-err" class="alert alert-err hidden"></div>
-        <div class="fg"><label class="fl">Email</label><input id="login-email" type="email" placeholder="admin@school.edu"/></div>
-        <div class="fg"><label class="fl">Password</label><input id="login-pw" type="password" placeholder="••••••••"/></div>
-        <button class="btn btn-primary" id="login-btn" style="width:100%;justify-content:center;margin-top:10px;padding:11px" onclick="doLogin()">Sign In →</button>
-        <p class="muted" style="font-size:.78rem;margin-top:14px;text-align:center">
-          <a href="#" onclick="showSetup()" style="color:var(--accent2)">← Change Firebase config</a>
-        </p>
-      </div>
-    </div>
-  </div>
+</div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="view-dashboard" class="hidden page">
   <div class="topbar">
-    <div class="brand">🏆 PosterVote</div>
-    <div class="flex">
-      <span class="badge b-accent">Admin</span>
-      <button class="btn btn-secondary btn-sm" onclick="doLogout()">Log out</button>
-    </div>
+    <div class="brand">&#127942; PosterVote</div>
+    <div class="flex"><span class="badge ba">Admin</span><button class="btn bs bsm" onclick="doLogout()">Log out</button></div>
   </div>
   <div class="content">
-    <div class="between" style="margin-bottom:28px">
-      <div>
-        <h1 style="font-size:1.7rem;margin-bottom:4px">Classes</h1>
-        <p class="muted" style="font-size:.88rem">Manage your courses, students, groups and voting.</p>
-      </div>
-      <button class="btn btn-primary" onclick="openCreateClass()">+ New Class</button>
+    <div class="between" style="margin-bottom:26px">
+      <div><h1 style="font-size:1.65rem;margin-bottom:3px">Classes</h1><p class="mu" style="font-size:.87rem">Manage courses, students, groups and voting.</p></div>
+      <button class="btn bp" onclick="openCreateClass()">+ New Class</button>
     </div>
     <div id="classes-grid" class="g3"></div>
   </div>
@@ -206,790 +125,491 @@ tbody tr:hover{background:var(--surface2)}
 <!-- CLASS PAGE -->
 <div id="view-class" class="hidden page">
   <div class="topbar">
-    <div class="flex">
-      <button class="btn-secondary btn btn-sm" onclick="showDashboard()">← Back</button>
-      <div class="brand">🏆 PosterVote</div>
-    </div>
-    <div class="flex">
-      <span class="badge b-accent">Admin</span>
-      <button class="btn btn-secondary btn-sm" onclick="doLogout()">Log out</button>
-    </div>
+    <div class="flex"><button class="btn bs bsm" onclick="showDashboard()">&#8592; Back</button><div class="brand">&#127942; PosterVote</div></div>
+    <div class="flex"><span class="badge ba">Admin</span><button class="btn bs bsm" onclick="doLogout()">Log out</button></div>
   </div>
   <div class="content">
-    <div class="between" style="margin-bottom:22px">
+    <div class="between" style="margin-bottom:20px">
       <div>
-        <div class="flex" style="margin-bottom:5px">
-          <h1 id="cls-name" style="font-size:1.6rem"></h1>
-          <span id="cls-voting-badge" class="badge b-muted"></span>
-        </div>
-        <p id="cls-desc" class="muted" style="font-size:.86rem"></p>
-        <div class="flex" style="margin-top:7px;gap:18px">
-          <span id="cls-stats-s" class="muted" style="font-size:.83rem"></span>
-          <span id="cls-stats-g" class="muted" style="font-size:.83rem"></span>
-          <span id="cls-stats-v" class="muted" style="font-size:.83rem"></span>
+        <div class="flex" style="margin-bottom:4px"><h1 id="cls-name" style="font-size:1.55rem"></h1><span id="cls-vbadge" class="badge bn"></span></div>
+        <p id="cls-desc" class="mu" style="font-size:.84rem"></p>
+        <div class="flex" style="margin-top:6px;gap:16px">
+          <span id="cs-s" class="mu" style="font-size:.81rem"></span>
+          <span id="cs-g" class="mu" style="font-size:.81rem"></span>
+          <span id="cs-v" class="mu" style="font-size:.81rem"></span>
         </div>
       </div>
-      <button class="btn btn-gold" onclick="showResults()">📊 View Results</button>
+      <button class="btn bgold" onclick="showResults()">&#128202; View Results</button>
     </div>
     <div class="tabs">
-      <button class="tab-btn active" data-tab="students" onclick="switchTab(this,'students')">👤 Students</button>
-      <button class="tab-btn" data-tab="groups" onclick="switchTab(this,'groups')">🗂 Groups</button>
-      <button class="tab-btn" data-tab="voting" onclick="switchTab(this,'voting')">🗳 Voting</button>
+      <button class="tab-btn active" data-tab="students" onclick="switchTab(this,'students')">&#128100; Students</button>
+      <button class="tab-btn" data-tab="groups" onclick="switchTab(this,'groups')">&#128193; Groups</button>
+      <button class="tab-btn" data-tab="voting" onclick="switchTab(this,'voting')">&#128499; Voting</button>
+      <button class="tab-btn" data-tab="qrcodes" onclick="switchTab(this,'qrcodes')">&#128241; QR Codes</button>
     </div>
-    <!-- Students tab -->
+    <!-- STUDENTS -->
     <div id="tab-students">
-      <div class="between" style="margin-bottom:16px">
-        <input id="stu-search" placeholder="Search students…" style="max-width:240px" oninput="renderStudents()"/>
+      <div class="between" style="margin-bottom:13px">
+        <input id="stu-search" placeholder="Search students..." style="max-width:230px" oninput="renderStudents()"/>
         <div class="flex">
-          <button id="btn-copy-all" class="btn btn-secondary btn-sm hidden" onclick="copyAllPins()">📋 Copy All</button>
-          <button id="btn-export-csv" class="btn btn-secondary btn-sm hidden" onclick="exportStudentCSV()">⬇ Export CSV</button>
+          <button id="btn-copyall" class="btn bs bsm hidden" onclick="copyAllPins()">&#128203; Copy All</button>
+          <button id="btn-export" class="btn bs bsm hidden" onclick="exportCSV()">&#8595; Export CSV</button>
           <input id="csv-file" type="file" accept=".csv" style="display:none" onchange="handleCSV(this)"/>
-          <button class="btn btn-primary btn-sm" onclick="document.getElementById('csv-file').click()">⬆ Import CSV</button>
+          <button class="btn bp bsm" onclick="document.getElementById('csv-file').click()">&#8593; Import CSV</button>
         </div>
       </div>
-      <div id="stu-import-msg"></div>
-      <div class="alert alert-info" style="font-size:.81rem;margin-bottom:16px">
-        📄 CSV columns: <span class="mono">name</span>, <span class="mono">id</span>, <span class="mono">email</span> (header row required). PINs are auto-generated.
-      </div>
-      <div id="stu-empty" class="card" style="text-align:center;padding:44px">
-        <div style="font-size:2.5rem;margin-bottom:10px">👤</div>
-        <h3 style="margin-bottom:7px">No students yet</h3>
-        <p class="muted" style="font-size:.88rem;margin-bottom:18px">Upload a CSV file to import students. PINs will be generated automatically.</p>
-        <button class="btn btn-primary" onclick="document.getElementById('csv-file').click()">⬆ Import CSV</button>
+      <div id="stu-msg"></div>
+      <div class="alert ai" style="font-size:.79rem;margin-bottom:12px">&#128196; CSV columns: <span class="mono">name, id, email</span> (header required). PINs auto-generated per student.</div>
+      <div id="stu-empty" class="card" style="text-align:center;padding:38px">
+        <div style="font-size:2.2rem;margin-bottom:8px">&#128100;</div><h3 style="margin-bottom:5px">No students yet</h3>
+        <p class="mu" style="font-size:.86rem;margin-bottom:14px">Upload a CSV file to import students.</p>
+        <button class="btn bp" onclick="document.getElementById('csv-file').click()">&#8593; Import CSV</button>
       </div>
       <div id="stu-table-wrap" class="card hidden" style="padding:0;overflow:hidden">
-        <div class="between" style="padding:12px 14px;border-bottom:1px solid var(--border)">
-          <span id="stu-count" class="muted" style="font-size:.83rem"></span>
-          <span id="stu-voted-badge" class="badge b-muted"></span>
+        <div class="between" style="padding:10px 13px;border-bottom:1px solid var(--bdr)">
+          <span id="stu-count" class="mu" style="font-size:.81rem"></span>
+          <span id="stu-voted" class="badge bn"></span>
         </div>
         <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>PIN</th><th>Group</th><th>Voted</th><th></th></tr></thead>
-            <tbody id="stu-tbody"></tbody>
-          </table>
+          <table><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>PIN</th><th>Group</th><th>Status</th><th></th></tr></thead>
+          <tbody id="stu-tbody"></tbody></table>
         </div>
       </div>
     </div>
-    <!-- Groups tab -->
+    <!-- GROUPS -->
     <div id="tab-groups" class="hidden">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
-        <button class="btn btn-primary" onclick="openCreateGroup()">+ New Group</button>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn bp" onclick="openCreateGroup()">+ New Group</button>
       </div>
-      <div id="grp-empty" class="card" style="text-align:center;padding:44px">
-        <div style="font-size:2.5rem;margin-bottom:10px">🗂</div>
-        <h3 style="margin-bottom:7px">No groups yet</h3>
-        <p class="muted" style="font-size:.88rem;margin-bottom:18px">Create groups and assign students. Each group represents a poster project.</p>
-        <button class="btn btn-primary" onclick="openCreateGroup()">+ Create First Group</button>
+      <div id="grp-empty" class="card" style="text-align:center;padding:38px">
+        <div style="font-size:2.2rem;margin-bottom:8px">&#128193;</div><h3 style="margin-bottom:5px">No groups yet</h3>
+        <p class="mu" style="font-size:.86rem;margin-bottom:14px">Create groups and assign students to poster projects.</p>
+        <button class="btn bp" onclick="openCreateGroup()">+ Create Group</button>
       </div>
-      <div id="grp-grid" class="g2"></div>
+      <div id="grp-grid" class="g2 hidden"></div>
     </div>
-    <!-- Voting tab -->
-    <div id="tab-voting" class="hidden">
-      <div id="voting-content"></div>
-    </div>
+    <!-- VOTING -->
+    <div id="tab-voting" class="hidden"><div id="voting-content"></div></div>
+    <!-- QR CODES -->
+    <div id="tab-qrcodes" class="hidden"><div id="qr-content"></div></div>
   </div>
 </div>
 
-<!-- RESULTS PAGE -->
+<!-- RESULTS -->
 <div id="view-results" class="hidden page">
   <div class="topbar">
+    <div class="flex"><button class="btn bs bsm" onclick="showClass()">&#8592; Back</button><div class="brand">&#127942; PosterVote</div></div>
     <div class="flex">
-      <button class="btn btn-secondary btn-sm" onclick="showClass()">← Back</button>
-      <div class="brand">🏆 PosterVote</div>
-    </div>
-    <div class="flex">
-      <button id="btn-auto" class="btn btn-secondary btn-sm" onclick="toggleAutoRefresh()">⏸ Paused</button>
-      <button class="btn btn-secondary btn-sm" onclick="loadResults()">↻ Refresh</button>
-      <button class="btn btn-secondary btn-sm" onclick="doLogout()">Log out</button>
+      <button id="btn-auto" class="btn bs bsm" onclick="toggleAutoRefresh()">&#9646; Paused</button>
+      <button class="btn bs bsm" onclick="loadResults()">&#8635; Refresh</button>
+      <button class="btn bs bsm" onclick="doLogout()">Log out</button>
     </div>
   </div>
   <div class="content">
-    <div style="margin-bottom:26px">
-      <h1 id="res-title" style="font-size:1.6rem;margin-bottom:6px"></h1>
-      <div class="flex" style="flex-wrap:wrap;gap:16px" id="res-stats"></div>
-    </div>
+    <div style="margin-bottom:22px"><h1 id="res-title" style="font-size:1.55rem;margin-bottom:6px"></h1><div class="flex" style="flex-wrap:wrap;gap:14px" id="res-stats"></div></div>
     <div id="res-list"></div>
   </div>
 </div>
 
-<!-- ══════════════ MODALS ═════════════════════════════════════════════ -->
-<!-- Create Class -->
+<!-- MODALS -->
 <div id="modal-class" class="overlay hidden">
-  <div class="modal">
-    <h2 style="margin-bottom:6px">Create New Class</h2>
-    <p class="muted" style="font-size:.84rem;margin-bottom:22px">Add a course to manage students, groups and voting.</p>
-    <div id="modal-class-err" class="alert alert-err hidden"></div>
-    <div class="fg"><label class="fl">Class Name *</label><input id="cls-name-inp" placeholder="e.g. CS401 — Software Engineering"/></div>
-    <div class="fg"><label class="fl">Description (optional)</label><input id="cls-desc-inp" placeholder="e.g. Spring 2025 Capstone"/></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
-      <button class="btn btn-secondary" onclick="closeModal('modal-class')">Cancel</button>
-      <button class="btn btn-primary" id="btn-save-class" onclick="saveClass()">Create Class</button>
-    </div>
+<div class="modal">
+  <h2 style="margin-bottom:5px">Create New Class</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Add a course to manage students, groups and voting.</p>
+  <div id="mcls-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Class Name *</label><input id="cls-name-inp" placeholder="e.g. CS401 &mdash; Software Engineering"/></div>
+  <div class="fg"><label class="fl">Description (optional)</label><input id="cls-desc-inp" placeholder="e.g. Spring 2025 Capstone"/></div>
+  <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bs" onclick="closeModal('modal-class')">Cancel</button>
+    <button class="btn bp" id="btn-save-cls" onclick="saveClass()">Create Class</button>
   </div>
 </div>
+</div>
 
-<!-- Create/Edit Group -->
 <div id="modal-group" class="overlay hidden">
-  <div class="modal wide">
-    <h2 id="grp-modal-title" style="margin-bottom:6px">Create New Group</h2>
-    <p class="muted" style="font-size:.84rem;margin-bottom:22px">Assign a name, project title, and select members.</p>
-    <div id="modal-grp-err" class="alert alert-err hidden"></div>
-    <div class="fg"><label class="fl">Group Name *</label><input id="grp-name-inp" placeholder="e.g. Group A"/></div>
-    <div class="fg"><label class="fl">Project / Poster Name *</label><input id="grp-proj-inp" placeholder="e.g. Smart Campus Waste Management System"/></div>
-    <div class="fg">
-      <label class="fl">Select Members (<span id="grp-sel-count">0</span> selected)</label>
-      <input id="grp-stu-search" placeholder="Search students…" style="margin-bottom:7px" oninput="renderMemberList()"/>
-      <div class="ck-list" id="grp-member-list"></div>
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
-      <button class="btn btn-secondary" onclick="closeModal('modal-group')">Cancel</button>
-      <button class="btn btn-primary" id="btn-save-grp" onclick="saveGroup()">Create Group</button>
-    </div>
+<div class="modal wide">
+  <h2 id="grp-modal-title" style="margin-bottom:5px">Create New Group</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Set a name, project title, and pick members.</p>
+  <div id="mgrp-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Group Name *</label><input id="grp-name-inp" placeholder="e.g. Group A"/></div>
+  <div class="fg"><label class="fl">Project / Poster Name *</label><input id="grp-proj-inp" placeholder="e.g. Smart Campus Waste Management"/></div>
+  <div class="fg">
+    <label class="fl">Members (<span id="grp-sel-cnt">0</span> selected)</label>
+    <input id="grp-stu-srch" placeholder="Search students..." style="margin-bottom:7px" oninput="renderMemberList()"/>
+    <div class="ck-list" id="grp-member-list"></div>
+  </div>
+  <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bs" onclick="closeModal('modal-group')">Cancel</button>
+    <button class="btn bp" id="btn-save-grp" onclick="saveGroup()">Create Group</button>
   </div>
 </div>
+</div>
 
-<!-- ══════════════════════════════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════════════════════════════ -->
+<div id="modal-qr" class="overlay hidden">
+<div class="modal xl">
+  <div class="between no-print" style="margin-bottom:16px">
+    <h2>QR Codes &mdash; <span id="qr-modal-title"></span></h2>
+    <div class="flex">
+      <button class="btn bp bsm" onclick="window.print()">&#128424; Print All</button>
+      <button class="btn bs bsm" onclick="closeModal('modal-qr')">Close</button>
+    </div>
+  </div>
+  <div id="qr-modal-body"></div>
+</div>
+</div>
+
 <script>
-// ─── State ─────────────────────────────────────────────────────────────────
-let db, auth, fbApp;
-let currentUser = null;
-let currentClass = null;   // { id, name, description, votingOpen }
-let students = [];         // array of student docs
-let groups   = [];         // array of group docs
-let editGroupId = null;    // null = create mode
-let selectedMemberIds = new Set();
-let autoRefreshTimer = null;
+// =====================================================
+// FIREBASE CONFIG — paste yours here to update
+// =====================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyChFTqAhyMaGZzR9v-M0zQA3VZZGt3hQzc",
+  authDomain:        "poster-vote-b6489.firebaseapp.com",
+  projectId:         "poster-vote-b6489",
+  storageBucket:     "poster-vote-b6489.firebasestorage.app",
+  messagingSenderId: "831679598650",
+  appId:             "1:831679598650:web:f447567db5ad1a6f2d6503"
+};
+// =====================================================
 
-// ─── Config / Init ──────────────────────────────────────────────────────────
-function getStoredConfig() {
-  try { return JSON.parse(localStorage.getItem('pv_config') || 'null'); } catch { return null; }
-}
-function saveConfig() {
-  const cfg = {
-    apiKey:            document.getElementById('cfg-apiKey').value.trim(),
-    authDomain:        document.getElementById('cfg-authDomain').value.trim(),
-    projectId:         document.getElementById('cfg-projectId').value.trim(),
-    storageBucket:     document.getElementById('cfg-storageBucket').value.trim(),
-    messagingSenderId: document.getElementById('cfg-senderId').value.trim(),
-    appId:             document.getElementById('cfg-appId').value.trim(),
-  };
-  const missing = Object.entries(cfg).filter(([,v])=>!v).map(([k])=>k);
-  if (missing.length) { showEl('setup-err','Please fill in: '+missing.join(', ')); return; }
-  localStorage.setItem('pv_config', JSON.stringify(cfg));
-  initFirebase(cfg);
-}
-function clearConfig() { localStorage.removeItem('pv_config'); location.reload(); }
-function showSetup() { show('view-setup'); }
+let db,auth,currentUser=null,currentClass=null,students=[],groups=[],editGroupId=null,selectedMemberIds=new Set(),autoTimer=null;
 
-function initFirebase(cfg) {
-  try {
-    if (firebase.apps.length) firebase.apps.forEach(a=>a.delete());
-    fbApp = firebase.initializeApp(cfg);
-    db   = firebase.firestore();
-    auth = firebase.auth();
-    auth.onAuthStateChanged(user => {
-      currentUser = user;
-      if (user) showDashboard();
-      else show('view-login');
-    });
-  } catch(e) {
-    showEl('setup-err','Firebase init failed: '+e.message);
-  }
-}
-
-// ─── Bootstrap ──────────────────────────────────────────────────────────────
-window.onload = () => {
-  const cfg = getStoredConfig();
-  if (cfg) initFirebase(cfg);
-  else show('view-setup');
+window.onload=()=>{
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.firestore();
+    auth=firebase.auth();
+    auth.onAuthStateChanged(u=>{currentUser=u;if(u)showDashboard();else show('view-login');});
+  }catch(e){showEl('login-err','Firebase error: '+e.message);show('view-login');}
 };
 
-// ─── View helpers ───────────────────────────────────────────────────────────
-const VIEWS = ['view-setup','view-login','view-dashboard','view-class','view-results'];
-function show(id) { VIEWS.forEach(v => document.getElementById(v).classList.toggle('hidden', v!==id)); }
-function showEl(id,msg) { const el=document.getElementById(id); el.textContent=msg; el.classList.remove('hidden'); }
-function hideEl(id) { document.getElementById(id).classList.add('hidden'); }
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+const VIEWS=['view-login','view-dashboard','view-class','view-results'];
+function show(id){VIEWS.forEach(v=>document.getElementById(v).classList.toggle('hidden',v!==id));}
+function showEl(id,m){const e=document.getElementById(id);e.textContent=m;e.classList.remove('hidden');}
+function hideEl(id){document.getElementById(id).classList.add('hidden');}
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ─── Auth ───────────────────────────────────────────────────────────────────
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-pw').value;
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim(),pw=document.getElementById('login-pw').value;
   hideEl('login-err');
-  const btn = document.getElementById('login-btn');
-  btn.disabled=true; btn.textContent='Signing in…';
-  try { await auth.signInWithEmailAndPassword(email, pw); }
-  catch(e) { showEl('login-err','Invalid credentials.'); btn.disabled=false; btn.textContent='Sign In →'; }
+  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Signing in...';
+  try{await auth.signInWithEmailAndPassword(email,pw);}
+  catch(e){showEl('login-err','Invalid credentials.');btn.disabled=false;btn.textContent='Sign In \u2192';}
 }
-async function doLogout() {
-  stopAutoRefresh();
-  await auth.signOut();
-  show('view-login');
+async function doLogout(){stopAutoRefresh();await auth.signOut();show('view-login');}
+
+async function showDashboard(){
+  stopAutoRefresh();show('view-dashboard');
+  const snap=await db.collection('classes').get();
+  const cls=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const grid=document.getElementById('classes-grid');
+  if(!cls.length){grid.innerHTML='<div class="card" style="text-align:center;padding:40px;grid-column:1/-1"><div style="font-size:2.2rem;margin-bottom:10px">\u{1F393}</div><h3 style="margin-bottom:6px">No classes yet</h3><p class="mu" style="margin-bottom:16px;font-size:.86rem">Create your first class to get started.</p><button class="btn bp" onclick="openCreateClass()">+ Create Class</button></div>';return;}
+  grid.innerHTML=cls.map(c=>'<div class="card fu" style="display:flex;flex-direction:column;gap:11px"><div class="between"><div style="width:40px;height:40px;border-radius:10px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:1.25rem">\u{1F4DA}</div><button class="btn bd bsm" onclick="deleteClass(\''+c.id+'\',\''+esc(c.name)+'\')">\u{1F5D1}</button></div><div><h3 style="font-size:.96rem;margin-bottom:3px">'+esc(c.name)+'</h3>'+(c.description?'<p class="mu" style="font-size:.82rem">'+esc(c.description)+'</p>':'')+'</div><button class="btn bs" style="margin-top:auto;justify-content:center" onclick="openClass(\''+c.id+'\')">Open Class \u2192</button></div>').join('');
 }
 
-// ─── Dashboard ──────────────────────────────────────────────────────────────
-async function showDashboard() {
-  show('view-dashboard');
-  const snap = await db.collection('classes').get();
-  const classes = snap.docs.map(d=>({id:d.id,...d.data()}));
-  const grid = document.getElementById('classes-grid');
-  if (!classes.length) {
-    grid.innerHTML = `<div class="card" style="text-align:center;padding:44px;grid-column:1/-1">
-      <div style="font-size:2.5rem;margin-bottom:12px">🎓</div>
-      <h3 style="margin-bottom:8px">No classes yet</h3>
-      <p class="muted" style="margin-bottom:20px;font-size:.88rem">Create your first class to get started.</p>
-      <button class="btn btn-primary" onclick="openCreateClass()">+ Create Class</button>
-    </div>`;
-    return;
-  }
-  grid.innerHTML = classes.map(c=>`
-    <div class="card fu" style="display:flex;flex-direction:column;gap:12px">
-      <div class="between">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--aglow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.3rem">📚</div>
-        <button class="btn-danger" onclick="deleteClass('${c.id}','${esc(c.name)}')">🗑</button>
-      </div>
-      <div>
-        <h3 style="font-size:1rem;margin-bottom:4px">${esc(c.name)}</h3>
-        ${c.description?`<p class="muted" style="font-size:.83rem">${esc(c.description)}</p>`:''}
-      </div>
-      <button class="btn btn-secondary" style="margin-top:auto;justify-content:center" onclick="openClass('${c.id}')">Open Class →</button>
-    </div>`).join('');
+function openCreateClass(){document.getElementById('cls-name-inp').value='';document.getElementById('cls-desc-inp').value='';hideEl('mcls-err');openModal('modal-class');}
+async function saveClass(){
+  const name=document.getElementById('cls-name-inp').value.trim();
+  if(!name){showEl('mcls-err','Name required.');return;}
+  const btn=document.getElementById('btn-save-cls');btn.disabled=true;btn.textContent='Creating...';
+  try{
+    const ref=await db.collection('classes').add({name,description:document.getElementById('cls-desc-inp').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),votingOpen:false,guestCode:''});
+    closeModal('modal-class');await openClass(ref.id);
+  }catch(e){showEl('mcls-err',e.message);}
+  btn.disabled=false;btn.textContent='Create Class';
+}
+async function deleteClass(id,name){
+  if(!confirm('Delete class "'+name+'" and ALL data?'))return;
+  const batch=db.batch();
+  for(const sub of['students','groups','votes']){const s=await db.collection('classes').doc(id).collection(sub).get();s.forEach(d=>batch.delete(d.ref));}
+  batch.delete(db.collection('classes').doc(id));await batch.commit();showDashboard();
 }
 
-function openCreateClass() {
-  document.getElementById('cls-name-inp').value='';
-  document.getElementById('cls-desc-inp').value='';
-  hideEl('modal-class-err');
-  openModal('modal-class');
-}
-
-async function saveClass() {
-  const name = document.getElementById('cls-name-inp').value.trim();
-  if (!name) { showEl('modal-class-err','Name is required.'); return; }
-  const btn = document.getElementById('btn-save-class');
-  btn.disabled=true; btn.textContent='Creating…';
-  try {
-    const ref = await db.collection('classes').add({
-      name, description: document.getElementById('cls-desc-inp').value.trim(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      votingOpen: false,
-    });
-    closeModal('modal-class');
-    await openClass(ref.id);
-  } catch(e) { showEl('modal-class-err',e.message); }
-  btn.disabled=false; btn.textContent='Create Class';
-}
-
-async function deleteClass(id,name) {
-  if (!confirm(`Delete class "${name}" and ALL its data?`)) return;
-  const batch = db.batch();
-  for (const sub of ['students','groups','votes']) {
-    const snap = await db.collection('classes').doc(id).collection(sub).get();
-    snap.forEach(d=>batch.delete(d.ref));
-  }
-  batch.delete(db.collection('classes').doc(id));
-  await batch.commit();
-  showDashboard();
-}
-
-// ─── Class page ──────────────────────────────────────────────────────────────
-async function openClass(classId) {
+async function openClass(classId){
   show('view-class');
-  // reset tabs
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('[data-tab="students"]').classList.add('active');
-  document.getElementById('tab-students').classList.remove('hidden');
-  document.getElementById('tab-groups').classList.add('hidden');
-  document.getElementById('tab-voting').classList.add('hidden');
+  ['students','groups','voting','qrcodes'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!=='students'));
   await loadClass(classId);
 }
-
-async function loadClass(classId) {
-  const [clsDoc, stuSnap, grpSnap] = await Promise.all([
-    db.collection('classes').doc(classId).get(),
-    db.collection('classes').doc(classId).collection('students').get(),
-    db.collection('classes').doc(classId).collection('groups').get(),
-  ]);
-  currentClass = { id: classId, ...clsDoc.data() };
-  students = stuSnap.docs.map(d=>({id:d.id,...d.data()}));
-  groups   = grpSnap.docs.map(d=>({id:d.id,...d.data()}));
-  renderClassHeader();
-  renderStudents();
-  renderGroups();
-  renderVotingTab();
+async function loadClass(classId){
+  const[clsDoc,stuSnap,grpSnap]=await Promise.all([db.collection('classes').doc(classId).get(),db.collection('classes').doc(classId).collection('students').get(),db.collection('classes').doc(classId).collection('groups').get()]);
+  currentClass={id:classId,...clsDoc.data()};
+  students=stuSnap.docs.map(d=>({id:d.id,...d.data()}));
+  groups=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
+  renderClassHeader();renderStudents();renderGroups();renderVotingTab();renderQRTab();
+}
+function renderClassHeader(){
+  const c=currentClass;
+  document.getElementById('cls-name').textContent=c.name;
+  document.getElementById('cls-desc').textContent=c.description||'';
+  const vb=document.getElementById('cls-vbadge');
+  vb.textContent=c.votingOpen?'\u{1F7E2} Voting Open':'\u23F8 Voting Closed';
+  vb.className='badge '+(c.votingOpen?'bgn':'bn');
+  const voted=students.filter(s=>s.hasVoted).length;
+  document.getElementById('cs-s').textContent='\u{1F465} '+students.length+' students';
+  document.getElementById('cs-g').textContent='\u{1F5C2} '+groups.length+' groups';
+  document.getElementById('cs-v').textContent='\u{1F5F3} '+voted+' voted';
+}
+function switchTab(btn,tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  ['students','groups','voting','qrcodes'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
 }
 
-function renderClassHeader() {
-  const c = currentClass;
-  document.getElementById('cls-name').textContent = c.name;
-  document.getElementById('cls-desc').textContent = c.description||'';
-  const vb = document.getElementById('cls-voting-badge');
-  vb.textContent = c.votingOpen ? '🟢 Voting Open' : '⏸ Voting Closed';
-  vb.className = 'badge ' + (c.votingOpen ? 'b-green' : 'b-muted');
-  const voted = students.filter(s=>s.hasVoted).length;
-  document.getElementById('cls-stats-s').textContent = `👥 ${students.length} students`;
-  document.getElementById('cls-stats-g').textContent = `🗂 ${groups.length} groups`;
-  document.getElementById('cls-stats-v').textContent = `🗳 ${voted} votes cast`;
-}
-
-function switchTab(btn, tab) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  ['students','groups','voting'].forEach(t=>
-    document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab)
-  );
-}
-
-// ─── Students tab ───────────────────────────────────────────────────────────
-function renderStudents() {
-  const q = (document.getElementById('stu-search').value||'').toLowerCase();
-  const grpMap = {};
-  groups.forEach(g=>grpMap[g.id]=g);
-  const filtered = students.filter(s=>
-    s.name.toLowerCase().includes(q)||
-    (s.email||'').toLowerCase().includes(q)||
-    (s.studentId||'').includes(q)
-  );
-  const voted = students.filter(s=>s.hasVoted).length;
-  const hasStudents = students.length>0;
-  document.getElementById('stu-empty').classList.toggle('hidden', hasStudents);
-  document.getElementById('stu-table-wrap').classList.toggle('hidden', !hasStudents);
-  document.getElementById('btn-copy-all').classList.toggle('hidden', !hasStudents);
-  document.getElementById('btn-export-csv').classList.toggle('hidden', !hasStudents);
-  if (!hasStudents) return;
-  document.getElementById('stu-count').textContent = `${filtered.length} of ${students.length} students`;
-  document.getElementById('stu-voted-badge').textContent = `${voted} voted`;
-  document.getElementById('stu-tbody').innerHTML = filtered.map(s=>{
-    const g = s.groupId && grpMap[s.groupId];
-    return `<tr>
-      <td style="font-weight:600">${esc(s.name)}</td>
-      <td class="mono muted" style="font-size:.83rem">${s.studentId||'—'}</td>
-      <td style="font-size:.83rem">${s.email||'—'}</td>
-      <td><span class="badge b-accent mono" style="letter-spacing:.09em;cursor:pointer" onclick="copyPin('${s.id}','${s.pin}')" id="pin-${s.id}">${s.pin}</span></td>
-      <td>${g?`<span class="badge b-muted">${esc(g.name)}</span>`:'<span class="muted">—</span>'}</td>
-      <td>${s.hasVoted?'<span class="badge b-green">Voted</span>':'<span class="badge b-muted">Pending</span>'}</td>
-      <td><button class="btn btn-danger" onclick="deleteStudent('${s.id}','${esc(s.name)}')">🗑</button></td>
-    </tr>`;
+function renderStudents(){
+  const q=(document.getElementById('stu-search').value||'').toLowerCase();
+  const gmap={};groups.forEach(g=>gmap[g.id]=g);
+  const f=students.filter(s=>s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||(s.studentId||'').includes(q));
+  const voted=students.filter(s=>s.hasVoted).length;const has=students.length>0;
+  document.getElementById('stu-empty').classList.toggle('hidden',has);
+  document.getElementById('stu-table-wrap').classList.toggle('hidden',!has);
+  document.getElementById('btn-copyall').classList.toggle('hidden',!has);
+  document.getElementById('btn-export').classList.toggle('hidden',!has);
+  if(!has)return;
+  document.getElementById('stu-count').textContent=f.length+' of '+students.length+' students';
+  document.getElementById('stu-voted').textContent=voted+' voted';
+  document.getElementById('stu-tbody').innerHTML=f.map(s=>{
+    const g=s.groupId&&gmap[s.groupId];
+    return '<tr><td style="font-weight:600">'+esc(s.name)+'</td><td class="mono mu" style="font-size:.81rem">'+(s.studentId||'&mdash;')+'</td><td style="font-size:.81rem">'+(s.email||'&mdash;')+'</td><td><span class="badge ba mono" style="letter-spacing:.09em;cursor:pointer" id="pin-'+s.id+'" onclick="copyPin(\''+s.id+'\',\''+s.pin+'\')">'+s.pin+'</span></td><td>'+(g?'<span class="badge bn">'+esc(g.name)+'</span>':'<span class="mu">&mdash;</span>')+'</td><td>'+(s.hasVoted?'<span class="badge bgn">\u2705 Voted</span>':'<span class="badge bn">Pending</span>')+'</td><td><button class="btn bd bsm" onclick="deleteStu(\''+s.id+'\',\''+esc(s.name)+'\')">\u{1F5D1}</button></td></tr>';
   }).join('');
 }
-
-function copyPin(id, pin) {
-  navigator.clipboard.writeText(pin);
-  const el=document.getElementById('pin-'+id);
-  const old=el.textContent; el.textContent='✅';
-  setTimeout(()=>el.textContent=old,1500);
-}
-function copyAllPins() {
-  const rows = students.map(s=>`${s.name}\t${s.studentId||''}\t${s.email||''}\t${s.pin}`);
-  navigator.clipboard.writeText('Name\tID\tEmail\tPIN\n'+rows.join('\n'));
-}
-function exportStudentCSV() {
-  const rows = ['Name,StudentID,Email,PIN'];
-  students.forEach(s=>rows.push(`"${s.name}","${s.studentId||''}","${s.email||''}","${s.pin}"`));
-  const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
-  const a=document.createElement('a'); a.href=url; a.download='students-pins.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-async function handleCSV(input) {
-  const file=input.files[0]; if(!file) return;
-  const msg=document.getElementById('stu-import-msg');
-  msg.innerHTML='<div class="alert alert-info">⏳ Importing…</div>';
-  try {
-    const rows = await parseCSV(file);
-    await importStudents(rows);
-    msg.innerHTML=`<div class="alert alert-ok">✅ Imported ${rows.length} students with PINs generated.</div>`;
-    await loadClass(currentClass.id);
-    setTimeout(()=>msg.innerHTML='',4000);
-  } catch(e) {
-    msg.innerHTML=`<div class="alert alert-err">⚠️ ${e.message}</div>`;
-  }
+function copyPin(id,pin){navigator.clipboard.writeText(pin);const e=document.getElementById('pin-'+id);const o=e.textContent;e.textContent='\u2705';setTimeout(()=>e.textContent=o,1400);}
+function copyAllPins(){const rows=students.map(s=>s.name+'\t'+(s.studentId||'')+'\t'+(s.email||'')+'\t'+s.pin);navigator.clipboard.writeText('Name\tID\tEmail\tPIN\n'+rows.join('\n'));}
+function exportCSV(){const rows=['Name,StudentID,Email,PIN'];students.forEach(s=>rows.push('"'+s.name+'","'+(s.studentId||'')+'","'+(s.email||'')+'","'+s.pin+'"'));const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=url;a.download='students-pins.csv';a.click();URL.revokeObjectURL(url);}
+async function handleCSV(input){
+  const file=input.files[0];if(!file)return;
+  const msg=document.getElementById('stu-msg');msg.innerHTML='<div class="alert ai">\u23F3 Importing...</div>';
+  try{const rows=await parseCSV(file);await importStudents(rows);msg.innerHTML='<div class="alert ao">\u2705 Imported '+rows.length+' students with PINs generated.</div>';await loadClass(currentClass.id);setTimeout(()=>msg.innerHTML='',4000);}
+  catch(e){msg.innerHTML='<div class="alert ae">\u26A0\uFE0F '+e.message+'</div>';}
   input.value='';
 }
+function parseCSV(file){return new Promise((res,rej)=>{Papa.parse(file,{header:true,skipEmptyLines:true,transformHeader:h=>h.trim().toLowerCase(),complete:r=>{const m=r.data.map(row=>({name:(row.name||row.full_name||row.fullname||'').trim(),studentId:(row.id||row.student_id||row.studentid||row.student_number||'').trim(),email:(row.email||row.email_address||'').trim()})).filter(r=>r.name);m.length?res(m):rej(new Error('No valid rows. CSV needs a "name" column.'));},error:e=>rej(e)});});}
+function genPin(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let p='';for(let i=0;i<6;i++)p+=c[Math.floor(Math.random()*c.length)];return p;}
+async function importStudents(rows){const batch=db.batch();rows.forEach(s=>{const ref=db.collection('classes').doc(currentClass.id).collection('students').doc();batch.set(ref,{name:s.name,studentId:s.studentId,email:s.email,pin:genPin(),hasVoted:false,groupId:null,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await batch.commit();}
+async function deleteStu(id,name){if(!confirm('Remove '+name+'?'))return;await db.collection('classes').doc(currentClass.id).collection('students').doc(id).delete();await loadClass(currentClass.id);}
 
-function parseCSV(file) {
-  return new Promise((res,rej)=>{
-    Papa.parse(file,{
-      header:true,skipEmptyLines:true,
-      transformHeader:h=>h.trim().toLowerCase(),
-      complete:r=>{
-        const mapped=r.data.map(row=>({
-          name:(row.name||row.full_name||row.fullname||'').trim(),
-          studentId:(row.id||row.student_id||row.studentid||row.student_number||'').trim(),
-          email:(row.email||row.email_address||'').trim(),
-        })).filter(r=>r.name);
-        if(!mapped.length) rej(new Error('No valid rows. Ensure CSV has a "name" column.'));
-        else res(mapped);
-      },
-      error:e=>rej(e)
-    });
-  });
-}
-
-function genPin() {
-  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let p=''; for(let i=0;i<6;i++) p+=c[Math.floor(Math.random()*c.length)];
-  return p;
-}
-
-async function importStudents(rows) {
-  const batch=db.batch();
-  for(const s of rows){
-    const ref=db.collection('classes').doc(currentClass.id).collection('students').doc();
-    batch.set(ref,{name:s.name,studentId:s.studentId,email:s.email,pin:genPin(),hasVoted:false,groupId:null,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  }
-  await batch.commit();
-}
-
-async function deleteStudent(id,name) {
-  if(!confirm(`Remove ${name}?`)) return;
-  await db.collection('classes').doc(currentClass.id).collection('students').doc(id).delete();
-  await loadClass(currentClass.id);
-}
-
-// ─── Groups tab ─────────────────────────────────────────────────────────────
-function renderGroups() {
-  const grid=document.getElementById('grp-grid');
-  document.getElementById('grp-empty').classList.toggle('hidden',groups.length>0);
-  grid.classList.toggle('hidden', groups.length===0);
-  const stuMap={};students.forEach(s=>stuMap[s.id]=s);
-  grid.innerHTML=groups.map(g=>{
-    const members=(g.memberIds||[]).map(id=>stuMap[id]).filter(Boolean);
-    return `<div class="card fu">
-      <div class="between" style="margin-bottom:12px">
-        <div>
-          <div class="flex" style="margin-bottom:4px">
-            <span style="font-size:1.2rem">🗂</span>
-            <h3 style="font-size:.98rem">${esc(g.name)}</h3>
-          </div>
-          <span class="badge b-accent" style="font-size:.75rem">📋 ${esc(g.projectName)}</span>
-        </div>
-        <div class="flex">
-          <button class="btn btn-secondary btn-sm" onclick="openEditGroup('${g.id}')">✏️</button>
-          <button class="btn btn-danger" onclick="deleteGroup('${g.id}','${esc(g.name)}')">🗑</button>
-        </div>
-      </div>
-      <p class="fl" style="margin-bottom:7px">Members (${members.length})</p>
-      ${members.length?`<div style="display:flex;flex-wrap:wrap;gap:5px">${members.map(s=>`<span class="badge b-muted">${esc(s.name)}</span>`).join('')}</div>`:'<p class="muted" style="font-size:.83rem">No members assigned.</p>'}
-    </div>`;
+function renderGroups(){
+  const has=groups.length>0;
+  document.getElementById('grp-empty').classList.toggle('hidden',has);
+  document.getElementById('grp-grid').classList.toggle('hidden',!has);
+  const smap={};students.forEach(s=>smap[s.id]=s);
+  document.getElementById('grp-grid').innerHTML=groups.map(g=>{
+    const mems=(g.memberIds||[]).map(id=>smap[id]).filter(Boolean);
+    return '<div class="card fu"><div class="between" style="margin-bottom:10px"><div><div class="flex" style="margin-bottom:3px"><span style="font-size:1.1rem">\u{1F5C2}</span><h3 style="font-size:.95rem">'+esc(g.name)+'</h3></div><span class="badge ba" style="font-size:.71rem">\u{1F4CB} '+esc(g.projectName)+'</span></div><div class="flex"><button class="btn bs bsm" onclick="openEditGroup(\''+g.id+'\')">\u270F\uFE0F</button><button class="btn bd bsm" onclick="deleteGroup(\''+g.id+'\',\''+esc(g.name)+'\')">\u{1F5D1}</button></div></div><p class="fl" style="margin-bottom:5px">Members ('+mems.length+')</p>'+(mems.length?'<div style="display:flex;flex-wrap:wrap;gap:4px">'+mems.map(s=>'<span class="badge bn">'+esc(s.name)+'</span>').join('')+'</div>':'<p class="mu" style="font-size:.82rem">No members assigned.</p>')+'</div>';
   }).join('');
 }
-
-function openCreateGroup() {
-  editGroupId=null;
-  selectedMemberIds=new Set();
-  document.getElementById('grp-name-inp').value='';
-  document.getElementById('grp-proj-inp').value='';
-  document.getElementById('grp-stu-search').value='';
-  document.getElementById('grp-modal-title').textContent='Create New Group';
-  document.getElementById('btn-save-grp').textContent='Create Group';
-  hideEl('modal-grp-err');
-  renderMemberList();
-  openModal('modal-group');
+function openCreateGroup(){editGroupId=null;selectedMemberIds=new Set();document.getElementById('grp-name-inp').value='';document.getElementById('grp-proj-inp').value='';document.getElementById('grp-stu-srch').value='';document.getElementById('grp-modal-title').textContent='Create New Group';document.getElementById('btn-save-grp').textContent='Create Group';hideEl('mgrp-err');renderMemberList();openModal('modal-group');}
+function openEditGroup(id){const g=groups.find(x=>x.id===id);if(!g)return;editGroupId=id;selectedMemberIds=new Set(g.memberIds||[]);document.getElementById('grp-name-inp').value=g.name;document.getElementById('grp-proj-inp').value=g.projectName||'';document.getElementById('grp-stu-srch').value='';document.getElementById('grp-modal-title').textContent='Edit Group';document.getElementById('btn-save-grp').textContent='Save Changes';hideEl('mgrp-err');renderMemberList();openModal('modal-group');}
+function renderMemberList(){
+  const q=(document.getElementById('grp-stu-srch').value||'').toLowerCase();
+  const avail=students.filter(s=>!s.groupId||s.groupId===editGroupId||selectedMemberIds.has(s.id)).filter(s=>s.name.toLowerCase().includes(q)||(s.studentId||'').includes(q));
+  document.getElementById('grp-sel-cnt').textContent=selectedMemberIds.size;
+  document.getElementById('grp-member-list').innerHTML=avail.map(s=>{const ck=selectedMemberIds.has(s.id);return '<div class="ck-item'+(ck?' checked':'')+'" onclick="toggleMember(\''+s.id+'\',this)"><input type="checkbox" '+(ck?'checked':'')+' onclick="event.stopPropagation();toggleMember(\''+s.id+'\',this.closest(\'.ck-item\'))"/><span style="flex:1;font-size:.86rem">'+esc(s.name)+'</span><span class="mu" style="font-size:.74rem">'+(s.studentId||s.email||'')+'</span></div>';}).join('');
 }
-
-function openEditGroup(id) {
-  const g=groups.find(x=>x.id===id);
-  if(!g) return;
-  editGroupId=id;
-  selectedMemberIds=new Set(g.memberIds||[]);
-  document.getElementById('grp-name-inp').value=g.name;
-  document.getElementById('grp-proj-inp').value=g.projectName||'';
-  document.getElementById('grp-stu-search').value='';
-  document.getElementById('grp-modal-title').textContent='Edit Group';
-  document.getElementById('btn-save-grp').textContent='Save Changes';
-  hideEl('modal-grp-err');
-  renderMemberList();
-  openModal('modal-group');
-}
-
-function renderMemberList() {
-  const q=(document.getElementById('grp-stu-search').value||'').toLowerCase();
-  // available: not in another group, OR in current edit group
-  const available=students.filter(s=>
-    !s.groupId || s.groupId===editGroupId || selectedMemberIds.has(s.id)
-  ).filter(s=>s.name.toLowerCase().includes(q)||(s.studentId||'').includes(q));
-  document.getElementById('grp-sel-count').textContent=selectedMemberIds.size;
-  document.getElementById('grp-member-list').innerHTML=available.map(s=>{
-    const ck=selectedMemberIds.has(s.id);
-    return `<div class="ck-item${ck?' checked':''}" onclick="toggleMember('${s.id}',this)">
-      <input type="checkbox" ${ck?'checked':''} onclick="event.stopPropagation();toggleMember('${s.id}',this.closest('.ck-item'))"/>
-      <span style="flex:1;font-size:.88rem">${esc(s.name)}</span>
-      <span class="muted" style="font-size:.76rem">${s.studentId||s.email||''}</span>
-    </div>`;
-  }).join('');
-}
-
-function toggleMember(id, el) {
-  if(selectedMemberIds.has(id)) selectedMemberIds.delete(id);
-  else selectedMemberIds.add(id);
-  el.classList.toggle('checked',selectedMemberIds.has(id));
-  el.querySelector('input').checked=selectedMemberIds.has(id);
-  document.getElementById('grp-sel-count').textContent=selectedMemberIds.size;
-}
-
-async function saveGroup() {
-  const name=document.getElementById('grp-name-inp').value.trim();
-  const proj=document.getElementById('grp-proj-inp').value.trim();
-  if(!name||!proj){showEl('modal-grp-err','Group name and project name are required.');return;}
-  const btn=document.getElementById('btn-save-grp');
-  btn.disabled=true;
+function toggleMember(id,el){selectedMemberIds.has(id)?selectedMemberIds.delete(id):selectedMemberIds.add(id);el.classList.toggle('checked',selectedMemberIds.has(id));el.querySelector('input').checked=selectedMemberIds.has(id);document.getElementById('grp-sel-cnt').textContent=selectedMemberIds.size;}
+async function saveGroup(){
+  const name=document.getElementById('grp-name-inp').value.trim(),proj=document.getElementById('grp-proj-inp').value.trim();
+  if(!name||!proj){showEl('mgrp-err','Group name and project name are required.');return;}
+  const btn=document.getElementById('btn-save-grp');btn.disabled=true;
   const mids=[...selectedMemberIds];
-  try {
+  try{
     const batch=db.batch();
-    if(editGroupId) {
-      // untag old members not in new list
-      const oldGroup=groups.find(g=>g.id===editGroupId);
-      const oldMids=oldGroup?.memberIds||[];
-      const removed=oldMids.filter(id=>!mids.includes(id));
-      const added=mids.filter(id=>!oldMids.includes(id));
-      batch.update(db.collection('classes').doc(currentClass.id).collection('groups').doc(editGroupId),
-        {name,projectName:proj,memberIds:mids});
-      removed.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:null}));
-      added.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:editGroupId}));
-    } else {
-      const ref=db.collection('classes').doc(currentClass.id).collection('groups').doc();
-      batch.set(ref,{name,projectName:proj,memberIds:mids,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-      mids.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:ref.id}));
-    }
-    await batch.commit();
-    closeModal('modal-group');
-    await loadClass(currentClass.id);
-  } catch(e){showEl('modal-grp-err',e.message);}
+    if(editGroupId){const oldG=groups.find(g=>g.id===editGroupId);const oldMids=oldG?.memberIds||[];const removed=oldMids.filter(id=>!mids.includes(id));const added=mids.filter(id=>!oldMids.includes(id));batch.update(db.collection('classes').doc(currentClass.id).collection('groups').doc(editGroupId),{name,projectName:proj,memberIds:mids});removed.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:null}));added.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:editGroupId}));}
+    else{const ref=db.collection('classes').doc(currentClass.id).collection('groups').doc();batch.set(ref,{name,projectName:proj,memberIds:mids,createdAt:firebase.firestore.FieldValue.serverTimestamp()});mids.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:ref.id}));}
+    await batch.commit();closeModal('modal-group');await loadClass(currentClass.id);
+  }catch(e){showEl('mgrp-err',e.message);}
   btn.disabled=false;
 }
-
-async function deleteGroup(id,name) {
-  if(!confirm(`Delete group "${name}"?`)) return;
+async function deleteGroup(id,name){
+  if(!confirm('Delete group "'+name+'"?'))return;
   const batch=db.batch();
-  const stuSnap=await db.collection('classes').doc(currentClass.id).collection('students').where('groupId','==',id).get();
-  stuSnap.forEach(d=>batch.update(d.ref,{groupId:null}));
+  const s=await db.collection('classes').doc(currentClass.id).collection('students').where('groupId','==',id).get();
+  s.forEach(d=>batch.update(d.ref,{groupId:null}));
   batch.delete(db.collection('classes').doc(currentClass.id).collection('groups').doc(id));
-  await batch.commit();
-  await loadClass(currentClass.id);
+  await batch.commit();await loadClass(currentClass.id);
 }
 
-// ─── Voting tab ─────────────────────────────────────────────────────────────
-function renderVotingTab() {
+function renderVotingTab(){
   const c=currentClass;
   const voted=students.filter(s=>s.hasVoted).length;
   const pct=students.length?Math.round(voted/students.length*100):0;
-  const voteLink=`${location.origin}${location.pathname.replace('index.html','')}vote.html?class=${c.id}`;
-  const grpItems=groups.map((g,i)=>`
-    <div style="display:flex;align-items:center;gap:13px;padding:11px 14px;background:var(--surface2);border-radius:var(--rS);border:1px solid var(--border)">
-      <span style="width:30px;height:30px;border-radius:7px;background:var(--aglow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-family:var(--fM);color:var(--accent2);flex-shrink:0">${String(i+1).padStart(2,'0')}</span>
-      <div style="flex:1">
-        <p style="font-size:.88rem;font-weight:600;margin-bottom:1px">${esc(g.name)}</p>
-        <p class="muted" style="font-size:.8rem">📋 ${esc(g.projectName)}</p>
-      </div>
-      <span class="badge b-muted" style="font-size:.73rem">👥 ${(g.memberIds||[]).length}</span>
-    </div>`).join('');
+  const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
+  const sLink=base+'?class='+c.id+'&mode=student';
+  const gLink=base+'?class='+c.id+'&mode=guest';
+  const grpItems=groups.map((g,i)=>'<div style="display:flex;align-items:center;gap:11px;padding:9px 12px;background:var(--s2);border-radius:var(--rS);border:1px solid var(--bdr)"><span style="width:27px;height:27px;border-radius:5px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-family:var(--fM);color:var(--a2);flex-shrink:0">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1"><p style="font-size:.86rem;font-weight:600">'+esc(g.name)+'</p><p class="mu" style="font-size:.78rem">\u{1F4CB} '+esc(g.projectName)+'</p></div><span class="badge bn" style="font-size:.71rem">\u{1F465} '+(g.memberIds||[]).length+'</span></div>').join('');
   document.getElementById('voting-content').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:18px">
-      <!-- Status -->
-      <div class="card" style="border-color:${c.votingOpen?'var(--green)':'var(--border)'}">
-        <div class="between">
-          <div>
-            <h3 style="margin-bottom:5px">Voting Session</h3>
-            <p class="muted" style="font-size:.84rem">${c.votingOpen?'Voting is open. Students can submit votes.':'Voting is closed. Open it when the poster session begins.'}</p>
-          </div>
-          <button class="btn ${c.votingOpen?'btn-danger':'btn-gold'}" onclick="toggleVoting()" id="btn-toggle-vote" style="min-width:150px;justify-content:center" ${groups.length===0?'disabled':''}>
-            ${c.votingOpen?'⏸ Close Voting':'▶ Open Voting'}
-          </button>
-        </div>
-        ${groups.length===0?'<div class="alert alert-err" style="margin-top:14px">⚠️ Create at least one group before opening voting.</div>':''}
+  <div style="display:flex;flex-direction:column;gap:15px">
+    <div class="card" style="border-color:${c.votingOpen?'var(--gn)':'var(--bdr)'}">
+      <div class="between">
+        <div><h3 style="margin-bottom:4px">Voting Session</h3><p class="mu" style="font-size:.82rem">${c.votingOpen?'Open &mdash; students and guests can rate all projects.':'Closed &mdash; open it when the poster session begins.'}</p></div>
+        <button class="btn ${c.votingOpen?'bd':'bgold'}" onclick="toggleVoting()" id="btn-tvote" style="min-width:140px;justify-content:center" ${groups.length===0?'disabled':''}>
+          ${c.votingOpen?'&#9646; Close Voting':'&#9654; Open Voting'}
+        </button>
       </div>
-      <!-- Link -->
-      <div class="card">
-        <h3 style="margin-bottom:5px">Student Voting Link</h3>
-        <p class="muted" style="font-size:.84rem;margin-bottom:14px">Share this link. Students enter their PIN to vote.</p>
-        <div class="copybox">
-          <code id="vote-link-val">${voteLink}</code>
-          <button class="btn btn-secondary btn-sm" onclick="copyVoteLink()">📋 Copy</button>
-        </div>
-        <p class="muted" style="font-size:.76rem;margin-top:7px">For QR code: paste the link into any free QR generator.</p>
+      ${groups.length===0?'<div class="alert ae" style="margin-top:11px">&#9888;&#65039; Create at least one group before opening voting.</div>':''}
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:4px">&#127760; Guest Code (Anonymous Voters)</h3>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Set a secret code to share with anonymous visitors (judges, attendees). Leave blank to disable guest voting.</p>
+      <div style="display:flex;gap:9px;align-items:center">
+        <input id="guest-code-inp" value="${esc(c.guestCode||'')}" placeholder="e.g. CONF2025" style="max-width:280px"/>
+        <button class="btn bs bsm" onclick="saveGuestCode()">Save</button>
+        <span id="gc-ok" class="badge bgn hidden">&#10003; Saved</span>
       </div>
-      <!-- Progress -->
-      <div class="card">
-        <div class="between" style="margin-bottom:10px">
-          <h3>Voting Progress</h3>
-          <span class="badge b-accent">${voted} / ${students.length}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="pbar-w"><div class="pbar-f" style="width:${pct}%"></div></div>
-          <span class="muted" style="font-size:.8rem;min-width:36px">${pct}%</span>
-        </div>
-      </div>
-      <!-- Groups list -->
-      <div class="card">
-        <h3 style="margin-bottom:14px">Groups in This Session (${groups.length})</h3>
-        ${groups.length?`<div style="display:flex;flex-direction:column;gap:8px">${grpItems}</div>`:'<p class="muted" style="font-size:.85rem">No groups yet.</p>'}
-      </div>
-      <!-- Danger -->
-      <div class="card" style="border-color:rgba(255,92,114,.3)">
-        <h3 style="margin-bottom:5px">Danger Zone</h3>
-        <p class="muted" style="font-size:.84rem;margin-bottom:14px">Reset all votes so students can vote again. Cannot be undone.</p>
-        <button class="btn btn-danger" onclick="resetVotes()">🔄 Reset All Votes</button>
-      </div>
-    </div>`;
-}
-
-function copyVoteLink() {
-  navigator.clipboard.writeText(document.getElementById('vote-link-val').textContent);
-}
-
-async function toggleVoting() {
-  const btn=document.getElementById('btn-toggle-vote');
-  btn.disabled=true;
-  await db.collection('classes').doc(currentClass.id).update({votingOpen:!currentClass.votingOpen});
-  await loadClass(currentClass.id);
-}
-
-async function resetVotes() {
-  if(!confirm('Reset all votes? Cannot be undone.')) return;
-  const [voteSnap,stuSnap]=await Promise.all([
-    db.collection('classes').doc(currentClass.id).collection('votes').get(),
-    db.collection('classes').doc(currentClass.id).collection('students').get(),
-  ]);
-  const batch=db.batch();
-  voteSnap.forEach(d=>batch.delete(d.ref));
-  stuSnap.forEach(d=>batch.update(d.ref,{hasVoted:false,votedForGroupId:null}));
-  await batch.commit();
-  await loadClass(currentClass.id);
-}
-
-// ─── Results ─────────────────────────────────────────────────────────────────
-function showResults() { show('view-results'); loadResults(); }
-function showClass()   { stopAutoRefresh(); show('view-class'); }
-
-async function loadResults() {
-  if(!currentClass) return;
-  const c=currentClass;
-  document.getElementById('res-title').textContent=`Results — ${c.name}`;
-  const [grpSnap,voteSnap,stuSnap]=await Promise.all([
-    db.collection('classes').doc(c.id).collection('groups').get(),
-    db.collection('classes').doc(c.id).collection('votes').get(),
-    db.collection('classes').doc(c.id).collection('students').get(),
-  ]);
-  const grps=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
-  const votes=voteSnap.docs.map(d=>({id:d.id,...d.data()}));
-  const stus=stuSnap.docs.map(d=>d.data());
-  const votedCnt=stus.filter(s=>s.hasVoted).length;
-  const totalVotes=votes.length;
-
-  document.getElementById('res-stats').innerHTML=`
-    <span class="muted" style="font-size:.83rem">📊 ${totalVotes} votes cast</span>
-    <span class="muted" style="font-size:.83rem">👤 ${votedCnt}/${stus.length} students voted</span>
-    <span class="badge ${c.votingOpen?'b-green':'b-muted'}">${c.votingOpen?'🟢 Voting Open':'⏸ Closed'}</span>`;
-
-  // aggregate
-  const agg={};
-  grps.forEach(g=>{agg[g.id]={group:g,votes:[],avgD:0,avgN:0,avgC:0,avgT:0,n:0};});
-  votes.forEach(v=>{ if(agg[v.groupId]) agg[v.groupId].votes.push(v); });
-  Object.values(agg).forEach(e=>{
-    const n=e.votes.length; e.n=n;
-    if(!n) return;
-    e.avgD=e.votes.reduce((s,v)=>s+v.scores.design,0)/n;
-    e.avgN=e.votes.reduce((s,v)=>s+v.scores.novelty,0)/n;
-    e.avgC=e.votes.reduce((s,v)=>s+v.scores.content,0)/n;
-    e.avgT=(e.avgD+e.avgN+e.avgC)/3;
-  });
-  const sorted=Object.values(agg).sort((a,b)=>b.avgT-a.avgT);
-  const MEDAL=['🥇','🥈','🥉'];
-
-  if(!sorted.length){
-    document.getElementById('res-list').innerHTML='<div class="card" style="text-align:center;padding:44px"><div style="font-size:2.5rem;margin-bottom:10px">🗳</div><h3>No votes yet</h3></div>';
-    return;
-  }
-  document.getElementById('res-list').innerHTML=sorted.map((e,i)=>{
-    const isTop=i===0&&e.n>0;
-    return `<div class="card fu" style="margin-bottom:14px;border:${isTop?'2px solid var(--gold)':i===1?'1.5px solid rgba(192,192,192,.5)':i===2?'1.5px solid rgba(205,127,50,.5)':'1px solid var(--border)'};background:${isTop?'rgba(246,195,71,.04)':'var(--surface)'}">
-      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
-        <div style="width:50px;height:50px;border-radius:13px;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:${i<3&&e.n>0?'1.5rem':'.9rem'};font-family:var(--fM);font-weight:700;color:var(--muted);flex-shrink:0">
-          ${i<3&&e.n>0?MEDAL[i]:'#'+(i+1)}
-        </div>
-        <div style="flex:1;min-width:180px">
-          <div class="flex" style="margin-bottom:3px;flex-wrap:wrap">
-            <h3 style="font-size:1rem">${esc(e.group.name)}</h3>
-            ${isTop?'<span class="badge b-gold">👑 Leader</span>':''}
-          </div>
-          <p style="color:var(--accent2);font-size:.85rem;margin-bottom:12px">📋 ${esc(e.group.projectName)}</p>
-          <div style="display:flex;flex-direction:column;gap:7px">
-            ${bar('🎨 Design', e.avgD,'var(--accent)')}
-            ${bar('💡 Novelty',e.avgN,'var(--green)')}
-            ${bar('📖 Content',e.avgC,'var(--gold)')}
-          </div>
-        </div>
-        <div style="text-align:center;flex-shrink:0">
-          <div style="font-size:2rem;font-weight:800;font-family:var(--fM);color:${isTop?'var(--gold)':'var(--white)'};line-height:1;margin-bottom:3px">
-            ${e.n?e.avgT.toFixed(2):'—'}
-          </div>
-          <div class="muted" style="font-size:.76rem">avg / 5</div>
-          <div class="badge b-muted" style="margin-top:7px">${e.n} vote${e.n!==1?'s':''}</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function bar(label,val,color){
-  const pct=(val/5)*100;
-  return `<div style="display:flex;align-items:center;gap:10px">
-    <span style="font-size:.76rem;color:var(--muted);width:70px;flex-shrink:0">${label}</span>
-    <div class="pbar-w"><div class="pbar-f" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}aa)"></div></div>
-    <span class="mono" style="font-size:.78rem;color:var(--muted);min-width:26px">${val.toFixed(1)}</span>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:11px">Voting Links</h3>
+      <p class="fl" style="margin-bottom:5px">&#127891; Student Link (needs PIN &mdash; can rate all groups except own)</p>
+      <div class="copybox" style="margin-bottom:13px"><code>${sLink}</code><button class="btn bs bsm" onclick="cpText('${sLink}',this)">&#128203; Copy</button></div>
+      <p class="fl" style="margin-bottom:5px">&#127760; Guest Link (needs Guest Code &mdash; can rate all groups)</p>
+      <div class="copybox"><code>${gLink}</code><button class="btn bs bsm" onclick="cpText('${gLink}',this)">&#128203; Copy</button></div>
+      <p class="mu" style="font-size:.75rem;margin-top:8px">QR codes for each project are in the <strong>QR Codes</strong> tab.</p>
+    </div>
+    <div class="card">
+      <div class="between" style="margin-bottom:8px"><h3>Student Voting Progress</h3><span class="badge ba">${voted} / ${students.length}</span></div>
+      <div style="display:flex;align-items:center;gap:9px"><div class="pbar-w"><div class="pbar-f" style="width:${pct}%"></div></div><span class="mu" style="font-size:.78rem">${pct}%</span></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:11px">Groups (${groups.length})</h3>
+      ${groups.length?'<div style="display:flex;flex-direction:column;gap:6px">'+grpItems+'</div>':'<p class="mu" style="font-size:.83rem">No groups yet.</p>'}
+    </div>
+    <div class="card" style="border-color:rgba(255,92,114,.3)">
+      <h3 style="margin-bottom:4px">Danger Zone</h3>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Reset all votes and allow voting again. Cannot be undone.</p>
+      <button class="btn bd" onclick="resetVotes()">&#128260; Reset All Votes</button>
+    </div>
   </div>`;
 }
 
-let autoOn=false;
-function toggleAutoRefresh(){
-  autoOn=!autoOn;
-  document.getElementById('btn-auto').textContent=autoOn?'🔄 Live':'⏸ Paused';
-  document.getElementById('btn-auto').className='btn btn-sm '+(autoOn?'btn-primary':'btn-secondary');
-  if(autoOn) autoRefreshTimer=setInterval(loadResults,15000);
-  else stopAutoRefresh();
+async function saveGuestCode(){
+  const code=document.getElementById('guest-code-inp').value.trim();
+  await db.collection('classes').doc(currentClass.id).update({guestCode:code});
+  currentClass.guestCode=code;
+  const ok=document.getElementById('gc-ok');ok.classList.remove('hidden');setTimeout(()=>ok.classList.add('hidden'),2000);
 }
-function stopAutoRefresh(){ clearInterval(autoRefreshTimer); autoOn=false; }
+async function toggleVoting(){
+  document.getElementById('btn-tvote').disabled=true;
+  await db.collection('classes').doc(currentClass.id).update({votingOpen:!currentClass.votingOpen});
+  await loadClass(currentClass.id);
+}
+async function resetVotes(){
+  if(!confirm('Reset ALL votes? Cannot be undone.'))return;
+  const[vs,ss]=await Promise.all([db.collection('classes').doc(currentClass.id).collection('votes').get(),db.collection('classes').doc(currentClass.id).collection('students').get()]);
+  const batch=db.batch();
+  vs.forEach(d=>batch.delete(d.ref));
+  ss.forEach(d=>batch.update(d.ref,{hasVoted:false}));
+  await batch.commit();await loadClass(currentClass.id);
+}
+function cpText(t,btn){navigator.clipboard.writeText(t);const o=btn.textContent;btn.textContent='\u2705 Copied!';setTimeout(()=>btn.textContent=o,1800);}
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function showDashboard(){ stopAutoRefresh(); show('view-dashboard'); showDashboard(); }
-// fix recursive call:
-// alias
-const _showDash = showDashboard;
-</script>
-<script>
-// Fix: showDashboard was calling itself. Redefine cleanly.
-async function showDashboard() {
-  stopAutoRefresh();
-  show('view-dashboard');
-  const snap = await db.collection('classes').get();
-  const classes = snap.docs.map(d=>({id:d.id,...d.data()}));
-  const grid = document.getElementById('classes-grid');
-  if (!classes.length) {
-    grid.innerHTML = `<div class="card" style="text-align:center;padding:44px;grid-column:1/-1">
-      <div style="font-size:2.5rem;margin-bottom:12px">🎓</div>
-      <h3 style="margin-bottom:8px">No classes yet</h3>
-      <p class="muted" style="margin-bottom:20px;font-size:.88rem">Create your first class to get started.</p>
-      <button class="btn btn-primary" onclick="openCreateClass()">+ Create Class</button>
-    </div>`;
-    return;
-  }
-  grid.innerHTML = classes.map(c=>`
-    <div class="card fu" style="display:flex;flex-direction:column;gap:12px">
-      <div class="between">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--aglow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.3rem">📚</div>
-        <button class="btn btn-danger" onclick="deleteClass('${c.id}','${esc(c.name)}')">🗑</button>
-      </div>
-      <div>
-        <h3 style="font-size:1rem;margin-bottom:4px">${esc(c.name)}</h3>
-        ${c.description?`<p class="muted" style="font-size:.83rem">${esc(c.description)}</p>`:''}
-      </div>
-      <button class="btn btn-secondary" style="margin-top:auto;justify-content:center" onclick="openClass('${c.id}')">Open Class →</button>
-    </div>`).join('');
+function renderQRTab(){
+  const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
+  const c=currentClass;
+  if(!groups.length){document.getElementById('qr-content').innerHTML='<div class="card" style="text-align:center;padding:38px"><div style="font-size:2.2rem;margin-bottom:8px">\u{1F4F1}</div><h3 style="margin-bottom:5px">No groups yet</h3><p class="mu" style="font-size:.86rem">Create groups first, then QR codes appear here.</p></div>';return;}
+  const ovStu=base+'?class='+c.id+'&mode=student';
+  const ovGst=base+'?class='+c.id+'&mode=guest';
+  let perG='';
+  groups.forEach(g=>{
+    const su=base+'?class='+c.id+'&mode=student&group='+g.id;
+    const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
+    perG+='<div class="qr-card"><p style="font-weight:700;font-size:.97rem;margin-bottom:1px">'+esc(g.name)+'</p><p style="color:var(--a2);font-size:.8rem;margin-bottom:11px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px">\u{1F393} Student</p><div id="qg-s-'+g.id+'"></div></div><div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px">\u{1F310} Guest</p><div id="qg-g-'+g.id+'"></div></div></div><button class="btn bs bsm" style="width:100%;justify-content:center;margin-top:9px" onclick="openQRPrint(\''+g.id+'\')">\u{1F5A8} Print This</button></div>';
+  });
+  document.getElementById('qr-content').innerHTML=
+    '<div class="between" style="margin-bottom:18px"><div><h3>QR Codes</h3><p class="mu" style="font-size:.82rem">Print and place at each poster. Two QRs per project: student (PIN) and guest (code).</p></div><button class="btn bp" onclick="openQRPrintAll()">\u{1F5A8} Print All</button></div>'+
+    '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">General Voting Links</h4>'+
+    '<div class="g2" style="margin-bottom:24px">'+
+      '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">\u{1F393} Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">PIN required &mdash; skips own group</p><div id="qov-stu"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovStu+'</p></div>'+
+      '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">\u{1F310} Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Guest code required &mdash; rates all groups</p><div id="qov-gst"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovGst+'</p></div>'+
+    '</div>'+
+    '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">Per-Project QR Codes</h4>'+
+    '<div class="g3" id="qr-per-group">'+perG+'</div>';
+
+  setTimeout(()=>{
+    makeQR('qov-stu',ovStu,130);makeQR('qov-gst',ovGst,130);
+    groups.forEach(g=>{
+      const su=base+'?class='+c.id+'&mode=student&group='+g.id;
+      const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
+      makeQR('qg-s-'+g.id,su,100);makeQR('qg-g-'+g.id,gu,100);
+    });
+  },50);
 }
+
+function makeQR(id,url,sz){
+  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#0d0f14',colorLight:'#f0f2ff',correctLevel:QRCode.CorrectLevel.M});}
+  catch(e){el.innerHTML='<p class="mu" style="font-size:.72rem;word-break:break-all">'+url+'</p>';}
+}
+
+function openQRPrintAll(){
+  const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
+  const c=currentClass;
+  document.getElementById('qr-modal-title').textContent=c.name;
+  let body='';
+  groups.forEach(g=>{
+    const su=base+'?class='+c.id+'&mode=student&group='+g.id;
+    const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
+    body+='<div style="border:1px solid var(--bdr);border-radius:var(--r);padding:18px;margin-bottom:16px;page-break-inside:avoid"><h3 style="font-family:var(--fH);margin-bottom:2px">'+esc(g.name)+'</h3><p style="color:var(--a2);font-size:.85rem;margin-bottom:12px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div style="text-align:center"><p style="font-weight:600;margin-bottom:7px">\u{1F393} Student Voting (PIN required)</p><div id="qpa-s-'+g.id+'"></div></div><div style="text-align:center"><p style="font-weight:600;margin-bottom:7px">\u{1F310} Guest Voting (Guest Code)</p><div id="qpa-g-'+g.id+'"></div></div></div></div>';
+  });
+  document.getElementById('qr-modal-body').innerHTML=body;
+  openModal('modal-qr');
+  setTimeout(()=>{groups.forEach(g=>{const su=base+'?class='+c.id+'&mode=student&group='+g.id;const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;makeQR('qpa-s-'+g.id,su,170);makeQR('qpa-g-'+g.id,gu,170);});},60);
+}
+
+function openQRPrint(groupId){
+  const g=groups.find(x=>x.id===groupId);if(!g)return;
+  const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
+  const c=currentClass;
+  const su=base+'?class='+c.id+'&mode=student&group='+g.id;
+  const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
+  document.getElementById('qr-modal-title').textContent=g.name;
+  document.getElementById('qr-modal-body').innerHTML='<div style="border:1px solid var(--bdr);border-radius:var(--r);padding:20px"><h3 style="font-family:var(--fH);margin-bottom:2px">'+esc(g.name)+'</h3><p style="color:var(--a2);font-size:.87rem;margin-bottom:14px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div style="text-align:center"><p style="font-weight:600;margin-bottom:8px">\u{1F393} Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Requires student PIN</p><div id="qps-stu"></div></div><div style="text-align:center"><p style="font-weight:600;margin-bottom:8px">\u{1F310} Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Requires guest code</p><div id="qps-gst"></div></div></div></div>';
+  openModal('modal-qr');
+  setTimeout(()=>{makeQR('qps-stu',su,190);makeQR('qps-gst',gu,190);},60);
+}
+
+async function loadResults(){
+  if(!currentClass)return;
+  const c=currentClass;
+  document.getElementById('res-title').textContent='Results \u2014 '+c.name;
+  const[grpSnap,voteSnap,stuSnap]=await Promise.all([db.collection('classes').doc(c.id).collection('groups').get(),db.collection('classes').doc(c.id).collection('votes').get(),db.collection('classes').doc(c.id).collection('students').get()]);
+  const grps=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const votes=voteSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const stus=stuSnap.docs.map(d=>d.data());
+  const stuVoted=stus.filter(s=>s.hasVoted).length;
+  const guestVotes=votes.filter(v=>v.voterType==='guest').length;
+  const stuVotes=votes.filter(v=>v.voterType==='student').length;
+  document.getElementById('res-stats').innerHTML=
+    '<span class="mu" style="font-size:.81rem">\u{1F393} '+stuVotes+' student votes</span>'+
+    '<span class="mu" style="font-size:.81rem">\u{1F310} '+guestVotes+' guest votes</span>'+
+    '<span class="mu" style="font-size:.81rem">\u{1F465} '+stuVoted+'/'+stus.length+' students submitted</span>'+
+    '<span class="badge '+(c.votingOpen?'bgn':'bn')+'">'+(c.votingOpen?'\u{1F7E2} Open':'\u23F8 Closed')+'</span>';
+
+  const agg={};
+  grps.forEach(g=>agg[g.id]={group:g,allScores:[],avgD:0,avgN:0,avgC:0,avgT:0,n:0});
+  // New format: each vote doc has ratings:{groupId:{design,novelty,content},...}
+  votes.forEach(v=>{
+    if(v.ratings){Object.entries(v.ratings).forEach(([gid,sc])=>{if(agg[gid])agg[gid].allScores.push(sc);});}
+    else if(v.groupId&&agg[v.groupId]){agg[v.groupId].allScores.push(v.scores||{});}
+  });
+  Object.values(agg).forEach(e=>{const n=e.allScores.length;e.n=n;if(!n)return;e.avgD=e.allScores.reduce((s,v)=>s+(v.design||0),0)/n;e.avgN=e.allScores.reduce((s,v)=>s+(v.novelty||0),0)/n;e.avgC=e.allScores.reduce((s,v)=>s+(v.content||0),0)/n;e.avgT=(e.avgD+e.avgN+e.avgC)/3;});
+  const sorted=Object.values(agg).sort((a,b)=>b.avgT-a.avgT);
+  const MEDAL=['\u{1F947}','\u{1F948}','\u{1F949}'];
+  if(!sorted.length){document.getElementById('res-list').innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:2.2rem;margin-bottom:8px">\u{1F5F3}</div><h3>No votes yet</h3></div>';return;}
+  document.getElementById('res-list').innerHTML=sorted.map((e,i)=>{
+    const isTop=i===0&&e.n>0;
+    return '<div class="card fu" style="margin-bottom:12px;border:'+(isTop?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.45)':i===2?'1.5px solid rgba(205,127,50,.45)':'1px solid var(--bdr)')+';background:'+(isTop?'rgba(246,195,71,.04)':'var(--sf)')+'"><div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="width:46px;height:46px;border-radius:11px;background:var(--s3);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:'+(i<3&&e.n>0?'1.35rem':'.86rem')+';font-family:var(--fM);font-weight:700;color:var(--mu);flex-shrink:0">'+(i<3&&e.n>0?MEDAL[i]:'#'+(i+1))+'</div><div style="flex:1;min-width:165px"><div class="flex" style="margin-bottom:2px;flex-wrap:wrap"><h3 style="font-size:.95rem">'+esc(e.group.name)+'</h3>'+(isTop?'<span class="badge bgo">\u{1F451} Leader</span>':'')+'</div><p style="color:var(--a2);font-size:.81rem;margin-bottom:10px">\u{1F4CB} '+esc(e.group.projectName)+'</p><div style="display:flex;flex-direction:column;gap:5px">'+rbar('\u{1F3A8} Design',e.avgD,'var(--ac)')+rbar('\u{1F4A1} Novelty',e.avgN,'var(--gn)')+rbar('\u{1F4D6} Content',e.avgC,'var(--go)')+'</div></div><div style="text-align:center;flex-shrink:0"><div style="font-size:1.85rem;font-weight:800;font-family:var(--fM);color:'+(isTop?'var(--go)':'var(--wh)')+';line-height:1;margin-bottom:3px">'+(e.n?e.avgT.toFixed(2):'&mdash;')+'</div><div class="mu" style="font-size:.73rem">avg / 5</div><div class="badge bn" style="margin-top:5px">'+e.n+' rating'+(e.n!==1?'s':'')+'</div></div></div></div>';
+  }).join('');
+}
+
+function rbar(label,val,color){const pct=(val/5)*100;return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.73rem;color:var(--mu);width:66px;flex-shrink:0">'+label+'</span><div class="pbar-w"><div class="pbar-f" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88)"></div></div><span class="mono" style="font-size:.74rem;color:var(--mu);min-width:24px">'+val.toFixed(1)+'</span></div>';}
+
+function showResults(){show('view-results');loadResults();}
+function showClass(){stopAutoRefresh();show('view-class');}
+let autoOn=false;
+function toggleAutoRefresh(){autoOn=!autoOn;document.getElementById('btn-auto').textContent=autoOn?'\u{1F504} Live':'\u23F8 Paused';document.getElementById('btn-auto').className='btn bsm '+(autoOn?'bp':'bs');if(autoOn)autoTimer=setInterval(loadResults,15000);else stopAutoRefresh();}
+function stopAutoRefresh(){clearInterval(autoTimer);autoOn=false;}
 </script>
 </body>
 </html>
