@@ -3,188 +3,174 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PosterVote &mdash; Vote</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<title>PosterVote - Vote</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--g2:#ffda80;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--rS:6px;--r:12px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
-html{font-size:16px;scroll-behavior:smooth}
-body{background:var(--ink);color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
-h1,h2,h3{font-family:var(--fH);line-height:1.2;font-weight:700}
-button{cursor:pointer;border:none;outline:none;font-family:var(--fB);transition:all .18s}
-input{font-family:var(--fB);outline:none;border:1.5px solid var(--bdr);background:var(--s3);color:var(--wh);border-radius:var(--rS);padding:9px 13px;font-size:.94rem;width:100%;transition:border-color .15s}
+:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--r:12px;--rS:6px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
+html,body{font-size:16px;background:var(--ink);color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
+h1,h2,h3{font-family:var(--fH);font-weight:700;line-height:1.2}
+button{cursor:pointer;border:none;outline:none;font-family:var(--fH);font-weight:600;transition:all .18s}
+input{font-family:var(--fB);outline:none;border:1.5px solid var(--bdr);background:var(--s3);color:var(--wh);border-radius:var(--rS);padding:10px 14px;font-size:.95rem;width:100%;transition:border-color .15s}
 input:focus{border-color:var(--ac)}
 input::placeholder{color:var(--mu)}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--ink2)}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+.hidden{display:none!important}
+.center{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
 .page{min-height:100vh;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;border-bottom:1px solid var(--bdr);background:var(--ink2);position:sticky;top:0;z-index:100}
-.brand{font-family:var(--fH);font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:7px}
-.content{flex:1;padding:22px;max-width:760px;margin:0 auto;width:100%}
-.card{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);padding:20px;margin-bottom:16px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:var(--rS);font-size:.88rem;font-weight:600;font-family:var(--fH);cursor:pointer;transition:all .18s}
-.bp{background:var(--ac);color:#fff}.bp:hover:not(:disabled){background:var(--a2);box-shadow:0 0 16px var(--ag);transform:translateY(-1px)}.bp:disabled{opacity:.45;cursor:not-allowed}
-.bs{background:var(--s3);color:var(--wh);border:1px solid var(--bdr)}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:.74rem;font-weight:600;font-family:var(--fM)}
-.bgn{background:rgba(62,207,142,.1);color:var(--gn);border:1px solid var(--gn)}
+.mu{color:var(--mu)} .mono{font-family:var(--fM)}
+.flex{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .3s ease}
+.spinner{width:40px;height:40px;border:3px solid var(--bdr);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}
+.card{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);padding:22px;margin-bottom:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border-radius:var(--rS);font-size:.9rem;font-weight:600;font-family:var(--fH);cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.bp{background:var(--ac);color:#fff}.bp:not(:disabled):hover{background:var(--a2);box-shadow:0 0 18px var(--ag);transform:translateY(-1px)}
+.bgn-btn{background:var(--gn);color:var(--ink)}.bgn-btn:not(:disabled):hover{filter:brightness(1.1)}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:.73rem;font-weight:600;font-family:var(--fM)}
 .ba{background:var(--ag);color:var(--a2);border:1px solid var(--ac)}
 .bn{background:var(--s3);color:var(--mu);border:1px solid var(--bdr)}
-.bgo{background:rgba(246,195,71,.1);color:var(--go);border:1px solid var(--go)}
-.alert{padding:10px 14px;border-radius:var(--rS);font-size:.84rem;margin-bottom:12px}
+.bgn{background:rgba(62,207,142,.12);color:var(--gn);border:1px solid var(--gn)}
+.bgo{background:rgba(246,195,71,.12);color:var(--go);border:1px solid var(--go)}
+.brd{background:rgba(255,92,114,.12);color:var(--rd);border:1px solid var(--rd)}
+.alert{padding:11px 15px;border-radius:var(--rS);font-size:.85rem;margin-bottom:14px;text-align:left}
 .ae{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--rd)}
 .ai{background:var(--ag);border:1px solid rgba(91,108,255,.3);color:var(--a2)}
-.center-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .fl{font-size:.74rem;font-family:var(--fM);color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
-.mu{color:var(--mu)} .mono{font-family:var(--fM)}
-.flex{display:flex;align-items:center;gap:9px}
-.spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--bdr);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite}
-.hidden{display:none!important}
-/* Group card for rating */
-.grp-rate-card{background:var(--s2);border:2px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:12px;transition:border-color .15s}
-.grp-rate-card.own{border-color:rgba(255,92,114,.3);opacity:.6}
-/* Stars */
-.stars{display:flex;gap:4px}
-.star{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;background:var(--s3);border:1px solid var(--bdr);transition:all .12s;-webkit-user-select:none;user-select:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--bdr);background:var(--ink2);position:sticky;top:0;z-index:50}
+.brand{font-family:var(--fH);font-size:1.05rem;font-weight:800}
+.content{flex:1;padding:24px;max-width:740px;margin:0 auto;width:100%}
+.grp-card{background:var(--s2);border:2px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:13px;transition:border-color .2s}
+.grp-card.own{border-color:rgba(255,92,114,.25);opacity:.55}
+.crit-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:9px 12px;background:var(--sf);border-radius:var(--rS);border:1px solid var(--bdr);margin-top:8px}
+.stars{display:flex;gap:5px}
+.star{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;background:var(--s3);border:1px solid var(--bdr);transition:all .12s;user-select:none;-webkit-user-select:none}
+.star:hover{transform:scale(1.12)}
 .star.on{background:var(--go);border-color:var(--go)}
-.star:hover:not(.disabled-star){transform:scale(1.1)}
-.star.disabled-star{cursor:not-allowed;opacity:.5}
-/* Progress ring */
-.pbar-w{height:5px;background:var(--s3);border-radius:100px;overflow:hidden}
-.pbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--ac),var(--a2));transition:width .4s}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
-.fu{animation:fu .32s ease}
-@media(max-width:520px){.content{padding:12px}.topbar{padding:10px 13px}}
+.submit-bar{position:sticky;bottom:14px;background:var(--ink2);border:1px solid var(--ac);border-radius:var(--r);padding:14px 18px;margin-top:6px}
+@media(max-width:520px){.content{padding:14px}.topbar{padding:11px 14px}.star{width:30px;height:30px;font-size:1rem}}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div id="view-loading" class="center-page" style="background:var(--ink)">
-  <span class="spinner" style="width:36px;height:36px"></span>
+<div id="s-loading" class="center">
+  <div class="spinner"></div>
+  <p id="s-msg" class="mu" style="margin-top:18px;font-size:.85rem;font-family:var(--fM)">Starting up...</p>
 </div>
 
-<!-- ERROR -->
-<div id="view-error" class="hidden center-page">
-  <div class="fu" style="text-align:center;max-width:400px">
-    <div style="font-size:3rem;margin-bottom:11px">&#10060;</div>
-    <h2 id="err-title" style="margin-bottom:7px">Error</h2>
-    <p id="err-msg" class="mu" style="font-size:.9rem"></p>
+<div id="s-error" class="center hidden">
+  <div class="fu" style="max-width:440px">
+    <div style="font-size:3rem;margin-bottom:12px">&#10060;</div>
+    <h2 id="e-title" style="margin-bottom:8px">Error</h2>
+    <p id="e-msg" class="mu" style="font-size:.9rem;margin-bottom:20px;word-break:break-word"></p>
+    <p class="mu" style="font-size:.78rem">Contact your instructor if this persists.</p>
   </div>
 </div>
 
-<!-- CLOSED -->
-<div id="view-closed" class="hidden center-page">
-  <div class="fu" style="text-align:center;max-width:420px">
-    <div style="font-size:3.5rem;margin-bottom:13px">&#9646;</div>
-    <h1 id="closed-cls" style="font-size:1.65rem;margin-bottom:7px"></h1>
-    <p class="mu" style="font-size:.9rem">Voting is not open yet. Your instructor will open it when the session begins.</p>
+<div id="s-closed" class="center hidden">
+  <div class="fu" style="max-width:420px">
+    <div style="font-size:3.5rem;margin-bottom:14px">&#9646;</div>
+    <h1 id="c-name" style="font-size:1.7rem;margin-bottom:8px"></h1>
+    <p class="mu" style="font-size:.9rem">Voting is not open yet. Your instructor will open it when the poster session begins.</p>
   </div>
 </div>
 
-<!-- PIN ENTRY (student mode) -->
-<div id="view-pin" class="hidden center-page" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.15) 0%,var(--ink) 70%)">
-  <div class="fu" style="width:100%;max-width:390px">
-    <div style="text-align:center;margin-bottom:30px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:14px;background:var(--ac);margin-bottom:12px;font-size:1.7rem;box-shadow:0 0 26px var(--ag)">&#128499;</div>
-      <h1 id="pin-cls-name" style="font-size:1.65rem;margin-bottom:3px"></h1>
-      <p class="mu" style="font-size:.87rem">Student Voting &mdash; Poster Session</p>
+<div id="s-pin" class="hidden" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.15),var(--ink))">
+  <div class="fu" style="width:100%;max-width:400px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;background:var(--ac);font-size:1.8rem;box-shadow:0 0 28px var(--ag);margin-bottom:14px">&#128499;</div>
+      <h1 id="p-name" style="font-size:1.7rem;margin-bottom:4px"></h1>
+      <p class="mu" style="font-size:.88rem">Student Voting</p>
     </div>
     <div class="card">
-      <h2 style="font-size:1rem;margin-bottom:16px">Enter Your PIN</h2>
-      <div id="pin-err" class="alert ae hidden"></div>
+      <h2 style="font-size:1.05rem;margin-bottom:6px">Enter Your PIN</h2>
+      <p class="mu" style="font-size:.83rem;margin-bottom:16px">You received a 6-character PIN from your instructor.</p>
+      <div id="p-err" class="alert ae hidden"></div>
       <div class="fg">
-        <label class="fl">Your 6-character PIN</label>
-        <input id="pin-inp" maxlength="8" placeholder="e.g. A3BK9Z" autocomplete="off" autocapitalize="characters"
-          style="font-family:var(--fM);letter-spacing:.15em;font-size:1.3rem;text-align:center"
+        <label class="fl">Your PIN</label>
+        <input id="p-inp" maxlength="8" placeholder="e.g. A3BK9Z" autocomplete="off"
+          style="font-family:var(--fM);letter-spacing:.18em;font-size:1.35rem;text-align:center;padding:12px"
           oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
-          onkeydown="if(event.key==='Enter')verifyPin()"/>
+          onkeydown="if(event.key==='Enter')doPin()"/>
       </div>
-      <button class="btn bp" id="pin-btn" onclick="verifyPin()" style="width:100%;justify-content:center;margin-top:5px;padding:11px">Verify &amp; Continue &#8594;</button>
+      <button class="btn bp" id="p-btn" onclick="doPin()" style="width:100%;padding:12px">Verify &amp; Continue &#8594;</button>
     </div>
   </div>
 </div>
 
-<!-- GUEST CODE ENTRY -->
-<div id="view-guest" class="hidden center-page" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(62,207,142,.1) 0%,var(--ink) 70%)">
-  <div class="fu" style="width:100%;max-width:390px">
-    <div style="text-align:center;margin-bottom:30px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:14px;background:var(--gn);margin-bottom:12px;font-size:1.7rem;box-shadow:0 0 26px rgba(62,207,142,.3);color:var(--ink)">&#127760;</div>
-      <h1 id="guest-cls-name" style="font-size:1.65rem;margin-bottom:3px"></h1>
-      <p class="mu" style="font-size:.87rem">Guest / Anonymous Voting</p>
+<div id="s-guest" class="hidden" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(62,207,142,.1),var(--ink))">
+  <div class="fu" style="width:100%;max-width:400px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;background:var(--gn);font-size:1.8rem;margin-bottom:14px;color:var(--ink)">&#127760;</div>
+      <h1 id="g-name" style="font-size:1.7rem;margin-bottom:4px"></h1>
+      <p class="mu" style="font-size:.88rem">Guest / Anonymous Voting</p>
     </div>
     <div class="card">
-      <h2 style="font-size:1rem;margin-bottom:14px">Enter Guest Code</h2>
-      <p class="mu" style="font-size:.83rem;margin-bottom:14px">The event organiser has given you a guest code to access voting.</p>
-      <div id="guest-err" class="alert ae hidden"></div>
+      <h2 style="font-size:1.05rem;margin-bottom:6px">Enter Guest Code</h2>
+      <p class="mu" style="font-size:.83rem;margin-bottom:16px">The organiser shared a code with you to access voting.</p>
+      <div id="g-err" class="alert ae hidden"></div>
       <div class="fg">
         <label class="fl">Guest Code</label>
-        <input id="guest-inp" maxlength="20" placeholder="e.g. CONF2025" autocomplete="off" autocapitalize="characters"
-          style="font-family:var(--fM);letter-spacing:.12em;font-size:1.1rem;text-align:center"
+        <input id="g-inp" maxlength="24" placeholder="e.g. CONF2025" autocomplete="off"
+          style="font-family:var(--fM);letter-spacing:.12em;font-size:1.15rem;text-align:center;padding:12px"
           oninput="this.value=this.value.toUpperCase()"
-          onkeydown="if(event.key==='Enter')verifyGuest()"/>
+          onkeydown="if(event.key==='Enter')doGuest()"/>
       </div>
-      <button class="btn bp" id="guest-btn" onclick="verifyGuest()" style="width:100%;justify-content:center;margin-top:5px;padding:11px;background:var(--gn);color:var(--ink)">Enter &amp; Vote &#8594;</button>
+      <button class="btn bgn-btn" id="g-btn" onclick="doGuest()" style="width:100%;padding:12px">Enter &amp; Vote &#8594;</button>
     </div>
   </div>
 </div>
 
-<!-- VOTING FORM -->
-<div id="view-vote" class="hidden page">
+<div id="s-vote" class="hidden page">
   <div class="topbar">
     <div class="brand">&#127942; PosterVote</div>
     <div class="flex">
       <span class="badge bgn">&#128994; Voting Open</span>
-      <span id="voter-badge" class="badge bn" style="font-size:.72rem"></span>
+      <span id="v-who" class="badge bn"></span>
     </div>
   </div>
   <div class="content">
     <div style="margin-bottom:20px">
       <h1 style="font-size:1.5rem;margin-bottom:5px">Rate the Poster Projects</h1>
-      <p class="mu" style="font-size:.87rem" id="vote-subtitle"></p>
+      <p id="v-sub" class="mu" style="font-size:.87rem"></p>
     </div>
-    <div id="vote-warn" class="alert ai hidden"></div>
-    <div id="vote-err" class="alert ae hidden"></div>
-    <div id="groups-list"></div>
-    <!-- Submit -->
-    <div class="card" style="position:sticky;bottom:16px;background:var(--ink2);border-color:var(--ac)">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div id="v-warn" class="alert ai hidden"></div>
+    <div id="v-err" class="alert ae hidden"></div>
+    <div id="v-groups"></div>
+    <div class="submit-bar">
+      <div class="between">
         <div>
-          <p style="font-weight:600;font-size:.9rem;margin-bottom:2px" id="submit-status">Rate at least one project to submit</p>
-          <p class="mu" style="font-size:.78rem" id="rated-count">0 of <span id="total-count">0</span> projects rated</p>
+          <p id="v-status" style="font-size:.88rem;font-weight:600;margin-bottom:2px">Rate at least one project to submit</p>
+          <p id="v-count" class="mu" style="font-size:.78rem">0 projects fully rated</p>
         </div>
-        <button class="btn bp" id="submit-btn" onclick="submitVotes()" disabled style="padding:10px 24px;font-size:.95rem">
-          &#128499; Submit All Ratings
-        </button>
+        <button class="btn bp" id="v-submit" onclick="doSubmit()" disabled style="padding:10px 22px">&#128499; Submit Ratings</button>
       </div>
     </div>
-    <p class="mu" style="font-size:.78rem;text-align:center;margin-top:8px">You can rate as many projects as you like. Submit once when done.</p>
+    <p class="mu" style="font-size:.77rem;text-align:center;margin-top:10px;margin-bottom:20px">Rate multiple projects. Submit once when finished. You can only submit once.</p>
   </div>
 </div>
 
-<!-- THANK YOU -->
-<div id="view-thanks" class="hidden center-page" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(62,207,142,.12) 0%,var(--ink) 70%)">
-  <div class="fu" style="text-align:center;max-width:440px">
-    <div style="font-size:4rem;margin-bottom:13px">&#127942;</div>
-    <h1 style="font-size:1.95rem;margin-bottom:7px">Ratings Submitted!</h1>
-    <p class="mu" style="margin-bottom:20px;font-size:.9rem">
-      Thank you, <strong id="thanks-name"></strong>! Your ratings have been recorded.
-      Results will be announced after the session closes.
-    </p>
-    <div id="thanks-summary" style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:18px;text-align:left"></div>
-    <span class="badge bgn" style="font-size:.88rem;padding:8px 18px">&#10003; Your votes have been counted</span>
+<div id="s-thanks" class="hidden center" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(62,207,142,.12),var(--ink))">
+  <div class="fu" style="max-width:460px;width:100%">
+    <div style="font-size:4rem;margin-bottom:14px">&#127942;</div>
+    <h1 style="font-size:2rem;margin-bottom:8px">Ratings Submitted!</h1>
+    <p class="mu" style="margin-bottom:22px;font-size:.9rem">Thank you, <strong id="t-name"></strong>! Your ratings have been saved. Results will be announced after the session closes.</p>
+    <div id="t-summary" style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;text-align:left;margin-bottom:18px;width:100%"></div>
+    <span class="badge bgn" style="font-size:.88rem;padding:9px 20px">&#10003; Your votes have been counted</span>
   </div>
 </div>
 
 <script>
-// =====================================================
-// FIREBASE CONFIG — same values as index.html
-// =====================================================
-const firebaseConfig = {
+// ==============================================
+// FIREBASE CONFIG
+// ==============================================
+var firebaseConfig = {
   apiKey:            "AIzaSyChFTqAhyMaGZzR9v-M0zQA3VZZGt3hQzc",
   authDomain:        "poster-vote-b6489.firebaseapp.com",
   projectId:         "poster-vote-b6489",
@@ -192,352 +178,382 @@ const firebaseConfig = {
   messagingSenderId: "831679598650",
   appId:             "1:831679598650:web:f447567db5ad1a6f2d6503"
 };
-// =====================================================
+// ==============================================
 
-let db;
-let classId=null, classData=null, groups=[], voter=null, ratings={};
+var DB = null;
+var CLS_ID = null;
+var CLS_DATA = null;
+var GROUPS = [];
+var VOTER = null;
+var RATINGS = {};
 
-// Safe show — never throws
-const VIEWS=['view-loading','view-error','view-closed','view-pin','view-guest','view-vote','view-thanks'];
-function show(id){
-  VIEWS.forEach(v=>{
-    const el=document.getElementById(v);
-    if(el) el.classList.toggle('hidden', v!==id);
+var ALL_SCREENS = ['s-loading','s-error','s-closed','s-pin','s-guest','s-vote','s-thanks'];
+
+function screen(id) {
+  ALL_SCREENS.forEach(function(s) {
+    var el = document.getElementById(s);
+    if (el) el.classList.toggle('hidden', s !== id);
   });
 }
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function showError(title,msg){
-  console.error('PosterVote error:', title, msg);
-  const t=document.getElementById('err-title');
-  const m=document.getElementById('err-msg');
-  if(t) t.textContent=title;
-  if(m) m.textContent=msg;
-  show('view-error');
+function setStatus(msg) {
+  var el = document.getElementById('s-msg');
+  if (el) el.textContent = msg;
+  console.log('[PosterVote]', msg);
 }
 
-// Init Firebase safely — handle "already initialized" case
-function initFirebase(){
-  try{
-    if(!firebase.apps.length){
+function showErr(title, msg) {
+  console.error('[PosterVote ERROR]', title, msg);
+  var t = document.getElementById('e-title');
+  var m = document.getElementById('e-msg');
+  if (t) t.textContent = title;
+  if (m) m.textContent = msg;
+  screen('s-error');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Use DOMContentLoaded - fires as soon as HTML is parsed
+document.addEventListener('DOMContentLoaded', function() {
+  setStatus('Initialising Firebase...');
+
+  try {
+    if (!firebase.apps || !firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    db=firebase.firestore();
-    return true;
-  }catch(e){
-    showError('Firebase Error', e.message);
-    return false;
-  }
-}
-
-window.onload=async()=>{
-  // Small delay to ensure all Firebase compat scripts are ready
-  await new Promise(r=>setTimeout(r,100));
-
-  if(!initFirebase()) return;
-
-  const p=new URLSearchParams(location.search);
-  classId=p.get('class');
-  const mode=(p.get('mode')||'student').toLowerCase();
-  window._focusGroup=p.get('group');
-
-  if(!classId){
-    showError('Invalid Link','This voting link is missing the class ID. Please use the link provided by your instructor.');
+    DB = firebase.firestore();
+    setStatus('Firebase OK. Reading URL...');
+  } catch(e) {
+    showErr('Firebase Init Failed', e.message);
     return;
   }
 
-  // Load class data
-  try{
-    const clsSnap=await db.collection('classes').doc(classId).get();
-    if(!clsSnap.exists){
-      showError('Class Not Found','This voting link is invalid or has expired.');
+  var params = new URLSearchParams(window.location.search);
+  CLS_ID = params.get('class');
+  var mode = (params.get('mode') || 'student').toLowerCase();
+  window._FOCUS_GROUP = params.get('group');
+
+  if (!CLS_ID) {
+    showErr('Invalid Link', 'No ?class= parameter in URL. Please use the exact link your instructor shared. URL was: ' + window.location.href);
+    return;
+  }
+
+  setStatus('Loading class data...');
+
+  DB.collection('classes').doc(CLS_ID).get().then(function(snap) {
+    if (!snap.exists) {
+      showErr('Class Not Found', 'No class with ID "' + CLS_ID + '" was found. The link may be outdated.');
+      return null;
+    }
+    CLS_DATA = snap.data();
+    CLS_DATA.id = snap.id;
+    setStatus('Class loaded. Loading groups...');
+    return DB.collection('classes').doc(CLS_ID).collection('groups').get();
+
+  }).then(function(grpSnap) {
+    if (!grpSnap) return; // error already shown above
+    GROUPS = grpSnap.docs.map(function(d) { return Object.assign({id: d.id}, d.data()); });
+    setStatus('Loaded ' + GROUPS.length + ' groups. Checking voting status...');
+
+    if (!CLS_DATA.votingOpen) {
+      var el = document.getElementById('c-name');
+      if (el) el.textContent = CLS_DATA.name;
+      screen('s-closed');
       return;
     }
-    classData={id:clsSnap.id,...clsSnap.data()};
-  }catch(e){
-    showError('Connection Error','Could not load class data: '+e.message+'. Check your Firestore security rules allow public reads.');
-    return;
-  }
 
-  // Load groups
-  try{
-    const grpSnap=await db.collection('classes').doc(classId).collection('groups').get();
-    groups=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
-  }catch(e){
-    showError('Connection Error','Could not load groups: '+e.message);
-    return;
-  }
-
-  if(!classData.votingOpen){
-    const el=document.getElementById('closed-cls');
-    if(el) el.textContent=classData.name;
-    show('view-closed');
-    return;
-  }
-
-  if(mode==='guest'){
-    if(!classData.guestCode){
-      showError('Guest Voting Disabled','The organiser has not enabled anonymous voting for this session.');
-      return;
+    if (mode === 'guest') {
+      if (!CLS_DATA.guestCode) {
+        showErr('Guest Voting Disabled', 'No guest code is set. The admin must set one in the Voting tab of the admin panel.');
+        return;
+      }
+      var el2 = document.getElementById('g-name');
+      if (el2) el2.textContent = CLS_DATA.name;
+      screen('s-guest');
+    } else {
+      var el3 = document.getElementById('p-name');
+      if (el3) el3.textContent = CLS_DATA.name;
+      screen('s-pin');
     }
-    const el=document.getElementById('guest-cls-name');
-    if(el) el.textContent=classData.name;
-    show('view-guest');
-  } else {
-    const el=document.getElementById('pin-cls-name');
-    if(el) el.textContent=classData.name;
-    show('view-pin');
-  }
-};
 
-// ─── PIN verification ──────────────────────────────
-async function verifyPin(){
-  const pinEl=document.getElementById('pin-inp');
-  const pin=(pinEl?pinEl.value:'').toUpperCase().trim();
-  if(pin.length<4) return;
-  const btn=document.getElementById('pin-btn');
-  const errEl=document.getElementById('pin-err');
-  if(btn){btn.disabled=true;btn.textContent='Verifying...';}
-  if(errEl) errEl.classList.add('hidden');
-  try{
-    const snap=await db.collection('classes').doc(classId).collection('students')
-      .where('pin','==',pin).limit(1).get();
-    if(snap.empty){
-      if(errEl){errEl.textContent='Invalid PIN. Please check and try again.';errEl.classList.remove('hidden');}
-      if(btn){btn.disabled=false;btn.textContent='Verify & Continue \u2192';}
-      return;
-    }
-    const s={id:snap.docs[0].id,...snap.docs[0].data()};
-    voter={type:'student',name:s.name,studentDocId:s.id,groupId:s.groupId||null};
-    if(s.hasVoted){showThanks(true);return;}
-    buildVoteForm();
-  }catch(e){
-    if(errEl){errEl.textContent='Error: '+e.message;errEl.classList.remove('hidden');}
-    if(btn){btn.disabled=false;btn.textContent='Verify & Continue \u2192';}
-  }
+  }).catch(function(e) {
+    showErr('Failed to Load Data', e.message + ' | code: ' + (e.code || 'none'));
+  });
+});
+
+function doPin() {
+  var inp = document.getElementById('p-inp');
+  var pin = inp ? inp.value.toUpperCase().replace(/\s/g,'') : '';
+  if (pin.length < 4) return;
+
+  var btn = document.getElementById('p-btn');
+  var errEl = document.getElementById('p-err');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+  if (errEl) errEl.classList.add('hidden');
+
+  DB.collection('classes').doc(CLS_ID).collection('students')
+    .where('pin', '==', pin).limit(1).get()
+    .then(function(snap) {
+      if (snap.empty) {
+        if (errEl) { errEl.textContent = 'PIN not found. Check for typos. Pins are case-insensitive.'; errEl.classList.remove('hidden'); }
+        if (btn) { btn.disabled = false; btn.textContent = 'Verify & Continue'; }
+        return;
+      }
+      var doc = snap.docs[0];
+      var data = doc.data();
+      VOTER = { type:'student', name:data.name, studentDocId:doc.id, groupId:data.groupId || null };
+      if (data.hasVoted) { showThanks(true); return; }
+      buildForm();
+    })
+    .catch(function(e) {
+      if (errEl) { errEl.textContent = 'Error: ' + e.message; errEl.classList.remove('hidden'); }
+      if (btn) { btn.disabled = false; btn.textContent = 'Verify & Continue'; }
+    });
 }
 
-// ─── Guest code verification ───────────────────────
-async function verifyGuest(){
-  const inp=document.getElementById('guest-inp');
-  const code=(inp?inp.value:'').toUpperCase().trim();
-  const errEl=document.getElementById('guest-err');
-  if(errEl) errEl.classList.add('hidden');
-  if(!code) return;
-  const expected=(classData.guestCode||'').toUpperCase();
-  if(!expected||code!==expected){
-    if(errEl){errEl.textContent='Incorrect guest code. Please check with the organiser.';errEl.classList.remove('hidden');}
+function doGuest() {
+  var inp = document.getElementById('g-inp');
+  var code = inp ? inp.value.toUpperCase().trim() : '';
+  var errEl = document.getElementById('g-err');
+  if (errEl) errEl.classList.add('hidden');
+  if (!code) return;
+
+  var expected = (CLS_DATA.guestCode || '').toUpperCase().trim();
+  if (code !== expected) {
+    if (errEl) { errEl.textContent = 'Incorrect code. Ask the organiser for the correct guest code.'; errEl.classList.remove('hidden'); }
     return;
   }
-  voter={type:'guest',name:'Guest Voter',studentDocId:null,groupId:null};
-  buildVoteForm();
+  VOTER = { type:'guest', name:'Guest', studentDocId:null, groupId:null };
+  buildForm();
 }
 
-// ─── Vote form ─────────────────────────────────────
-function buildVoteForm(){
-  const isStudent=voter.type==='student';
-  const vb=document.getElementById('voter-badge');
-  if(vb) vb.textContent=isStudent?('\u{1F393} '+voter.name):'\u{1F310} Guest';
+function buildForm() {
+  var isStu = VOTER.type === 'student';
+  var who = document.getElementById('v-who');
+  if (who) who.textContent = isStu ? VOTER.name + ' (Student)' : 'Guest Voter';
 
-  const sub=document.getElementById('vote-subtitle');
-  if(sub) sub.textContent=isStudent
-    ? 'Rate any project except your own. Rate as many as you like \u2014 then submit.'
-    : 'Rate any project. Rate as many as you like \u2014 then submit.';
+  var sub = document.getElementById('v-sub');
+  if (sub) sub.textContent = isStu
+    ? 'Rate any project except your own group. Give 1-5 stars on Design, Novelty and Content, then submit.'
+    : 'Rate any project. Give 1-5 stars on Design, Novelty and Content, then submit.';
 
-  const warn=document.getElementById('vote-warn');
-  if(isStudent&&voter.groupId){
-    const ownGrp=groups.find(g=>g.id===voter.groupId);
-    if(warn){
-      warn.textContent='\u2139\uFE0F You are in a group'+(ownGrp?' ('+ownGrp.name+')')+'  \u2014 you cannot rate your own project.';
+  if (isStu && VOTER.groupId) {
+    var own = GROUPS.find(function(g) { return g.id === VOTER.groupId; });
+    var warn = document.getElementById('v-warn');
+    if (warn) {
+      warn.textContent = 'You are in ' + (own ? own.name : 'a group') + ' — you cannot rate your own project.';
       warn.classList.remove('hidden');
     }
   }
 
-  const totEl=document.getElementById('total-count');
-  const ratableCount=groups.filter(g=>!(isStudent&&g.id===voter.groupId)).length;
-  if(totEl) totEl.textContent=ratableCount;
+  renderCards();
+  screen('s-vote');
 
-  renderGroupRatingCards();
-  show('view-vote');
-
-  if(window._focusGroup){
-    setTimeout(()=>{
-      const el=document.getElementById('grp-card-'+window._focusGroup);
-      if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
-    },400);
+  if (window._FOCUS_GROUP) {
+    setTimeout(function() {
+      var el = document.getElementById('gc-' + window._FOCUS_GROUP);
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 400);
   }
 }
 
-function renderGroupRatingCards(){
-  const isStudent=voter.type==='student';
-  const el=document.getElementById('groups-list');
-  if(!el) return;
-  el.innerHTML=groups.map(g=>{
-    const isOwn=isStudent&&g.id===voter.groupId;
-    return '<div class="grp-rate-card'+(isOwn?' own':'')+'" id="grp-card-'+g.id+'">'+
-      '<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:'+(isOwn?'8':'13')+'px">'+
-        '<div>'+
-          '<h3 style="font-size:1rem;margin-bottom:2px">'+esc(g.name)+'</h3>'+
-          '<p style="color:var(--a2);font-size:.85rem">\u{1F4CB} '+esc(g.projectName)+'</p>'+
-        '</div>'+
-        (isOwn
-          ? '<span class="badge" style="background:rgba(255,92,114,.1);color:var(--rd);border:1px solid var(--rd)">\u{1F6AB} Your Project</span>'
-          : '<span id="score-badge-'+g.id+'" class="badge bn">Not rated</span>'
-        )+
-      '</div>'+
-      (isOwn
-        ? '<p class="mu" style="font-size:.83rem">You cannot rate your own project.</p>'
-        : '<div style="display:flex;flex-direction:column;gap:9px">'+
-            crit(g.id,'design','\u{1F3A8} Design','Visual quality, layout & aesthetics')+
-            crit(g.id,'novelty','\u{1F4A1} Novelty','Originality & innovation of the concept')+
-            crit(g.id,'content','\u{1F4D6} Content','Depth, clarity & accuracy of information')+
-          '</div>'
-      )+
-    '</div>';
-  }).join('');
+function renderCards() {
+  var isStu = VOTER.type === 'student';
+  var wrap = document.getElementById('v-groups');
+  if (!wrap) return;
 
-  // Render stars after DOM settles
-  setTimeout(()=>{
-    groups.forEach(g=>{
-      if(!(isStudent&&g.id===voter.groupId)){
-        ['design','novelty','content'].forEach(k=>buildStars(g.id,k));
+  var html = '';
+  GROUPS.forEach(function(g) {
+    var own = isStu && g.id === VOTER.groupId;
+    html += '<div class="grp-card' + (own ? ' own' : '') + '" id="gc-' + g.id + '">';
+    html += '<div class="between" style="margin-bottom:' + (own ? '6' : '12') + 'px">';
+    html += '<div><h3 style="font-size:1rem;margin-bottom:2px">' + esc(g.name) + '</h3>';
+    html += '<p style="color:var(--a2);font-size:.84rem">&#128203; ' + esc(g.projectName) + '</p></div>';
+    html += own
+      ? '<span class="badge brd">&#128683; Your Project</span>'
+      : '<span class="badge bn" id="sb-' + g.id + '">Not rated</span>';
+    html += '</div>';
+    if (own) {
+      html += '<p class="mu" style="font-size:.82rem">You cannot rate your own project.</p>';
+    } else {
+      html += critRow(g.id, 'design',  '&#127912; Design',  'Visual quality, layout and aesthetics');
+      html += critRow(g.id, 'novelty', '&#128161; Novelty', 'Originality and innovation of the idea');
+      html += critRow(g.id, 'content', '&#128214; Content',  'Depth, accuracy and clarity of information');
+    }
+    html += '</div>';
+  });
+  wrap.innerHTML = html;
+
+  setTimeout(function() {
+    GROUPS.forEach(function(g) {
+      var isStu2 = VOTER.type === 'student';
+      if (!(isStu2 && g.id === VOTER.groupId)) {
+        makeStars(g.id, 'design');
+        makeStars(g.id, 'novelty');
+        makeStars(g.id, 'content');
       }
     });
-    updateSubmitStatus();
-  },50);
+    refreshSubmit();
+  }, 30);
 }
 
-function crit(gid,key,label,desc){
-  return '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 12px;background:var(--sf);border-radius:var(--rS);border:1px solid var(--bdr)">'+
-    '<div style="min-width:120px"><p style="font-weight:600;font-size:.86rem;margin-bottom:1px">'+label+'</p><p class="mu" style="font-size:.76rem">'+desc+'</p></div>'+
-    '<div class="stars" id="stars-'+gid+'-'+key+'"></div>'+
-  '</div>';
+function critRow(gid, key, label, desc) {
+  return '<div class="crit-row">' +
+    '<div><p style="font-weight:600;font-size:.86rem;margin-bottom:1px">' + label + '</p>' +
+    '<p style="font-size:.75rem;color:var(--mu)">' + desc + '</p></div>' +
+    '<div class="stars" id="sr-' + gid + '-' + key + '"></div>' +
+    '</div>';
 }
 
-function buildStars(gid,key){
-  const el=document.getElementById('stars-'+gid+'-'+key);
-  if(!el) return;
-  el.innerHTML=[1,2,3,4,5].map(n=>
-    '<div class="star" id="star-'+gid+'-'+key+'-'+n+'" onclick="setScore(\''+gid+'\',\''+key+'\','+n+')" title="'+n+' star'+(n>1?'s':'')+'">&#9733;</div>'
-  ).join('');
-}
-
-function setScore(gid,key,val){
-  if(!ratings[gid]) ratings[gid]={};
-  ratings[gid][key]=val;
-  for(let n=1;n<=5;n++){
-    const s=document.getElementById('star-'+gid+'-'+key+'-'+n);
-    if(s) s.classList.toggle('on',n<=val);
+function makeStars(gid, key) {
+  var wrap = document.getElementById('sr-' + gid + '-' + key);
+  if (!wrap) return;
+  var h = '';
+  for (var n = 1; n <= 5; n++) {
+    h += '<div class="star" id="st-' + gid + '-' + key + '-' + n + '" ';
+    h += 'onclick="setScore(\'' + gid + '\',\'' + key + '\',' + n + ')" ';
+    h += 'title="' + n + ' star' + (n > 1 ? 's' : '') + '">&#9733;</div>';
   }
-  updateGroupCard(gid);
-  updateSubmitStatus();
+  wrap.innerHTML = h;
 }
 
-function updateGroupCard(gid){
-  const r=ratings[gid]||{};
-  const cnt=[r.design,r.novelty,r.content].filter(Boolean).length;
-  const badge=document.getElementById('score-badge-'+gid);
-  const card=document.getElementById('grp-card-'+gid);
-  if(!badge) return;
-  if(cnt===3){
-    const avg=((r.design+r.novelty+r.content)/3).toFixed(1);
-    badge.textContent='\u2B50 '+avg+'/5';
-    badge.className='badge bgo';
-    if(card) card.style.borderColor='var(--go)';
-  } else if(cnt>0){
-    badge.textContent=cnt+'/3 criteria';
-    badge.className='badge ba';
-    if(card) card.style.borderColor='var(--ac)';
+function setScore(gid, key, val) {
+  if (!RATINGS[gid]) RATINGS[gid] = {};
+  RATINGS[gid][key] = val;
+  for (var n = 1; n <= 5; n++) {
+    var s = document.getElementById('st-' + gid + '-' + key + '-' + n);
+    if (s) s.classList.toggle('on', n <= val);
+  }
+  refreshCard(gid);
+  refreshSubmit();
+}
+
+function refreshCard(gid) {
+  var r = RATINGS[gid] || {};
+  var cnt = [r.design, r.novelty, r.content].filter(Boolean).length;
+  var badge = document.getElementById('sb-' + gid);
+  var card  = document.getElementById('gc-' + gid);
+  if (!badge) return;
+  if (cnt === 3) {
+    var avg = ((r.design + r.novelty + r.content) / 3).toFixed(1);
+    badge.textContent = '&#11088; ' + avg + '/5';
+    badge.className = 'badge bgo';
+    if (card) card.style.borderColor = 'var(--go)';
+  } else if (cnt > 0) {
+    badge.textContent = cnt + '/3 criteria';
+    badge.className = 'badge ba';
+    if (card) card.style.borderColor = 'var(--ac)';
   } else {
-    badge.textContent='Not rated';
-    badge.className='badge bn';
-    if(card) card.style.borderColor='var(--bdr)';
+    badge.textContent = 'Not rated';
+    badge.className = 'badge bn';
+    if (card) card.style.borderColor = 'var(--bdr)';
   }
 }
 
-function updateSubmitStatus(){
-  const isStudent=voter&&voter.type==='student';
-  const ratable=groups.filter(g=>!(isStudent&&g.id===voter.groupId));
-  const fullyRated=ratable.filter(g=>{const r=ratings[g.id];return r&&r.design&&r.novelty&&r.content;});
-  const anyRated=ratable.some(g=>{const r=ratings[g.id];return r&&(r.design||r.novelty||r.content);});
-  const rc=document.getElementById('rated-count');
-  if(rc) rc.textContent=fullyRated.length+' of '+ratable.length+' projects fully rated';
-  const btn=document.getElementById('submit-btn');
-  if(btn) btn.disabled=!anyRated;
-  const ss=document.getElementById('submit-status');
-  if(ss) ss.textContent=anyRated
-    ?(fullyRated.length===ratable.length?'All projects rated \u2014 ready to submit!':'Rate more or submit now')
-    :'Rate at least one project to submit';
+function refreshSubmit() {
+  var isStu = VOTER && VOTER.type === 'student';
+  var ratable = GROUPS.filter(function(g) { return !(isStu && g.id === VOTER.groupId); });
+  var full = ratable.filter(function(g) { var r=RATINGS[g.id]; return r&&r.design&&r.novelty&&r.content; });
+  var any  = ratable.some(function(g)  { var r=RATINGS[g.id]; return r&&(r.design||r.novelty||r.content); });
+
+  var btn = document.getElementById('v-submit');
+  if (btn) btn.disabled = !any;
+
+  var st = document.getElementById('v-status');
+  if (st) st.textContent = any
+    ? (full.length === ratable.length ? 'All projects rated - ready to submit!' : 'Partial ratings OK - submit when ready')
+    : 'Rate at least one project to submit';
+
+  var ct = document.getElementById('v-count');
+  if (ct) ct.textContent = full.length + ' of ' + ratable.length + ' projects fully rated';
 }
 
-// ─── Submit ────────────────────────────────────────
-async function submitVotes(){
-  const isStudent=voter.type==='student';
-  const validRatings={};
-  groups.forEach(g=>{
-    if(isStudent&&g.id===voter.groupId) return;
-    const r=ratings[g.id];
-    if(r&&(r.design||r.novelty||r.content)){
-      validRatings[g.id]={design:r.design||0,novelty:r.novelty||0,content:r.content||0};
+function doSubmit() {
+  var isStu = VOTER.type === 'student';
+  var payload = {};
+  GROUPS.forEach(function(g) {
+    if (isStu && g.id === VOTER.groupId) return;
+    var r = RATINGS[g.id];
+    if (r && (r.design || r.novelty || r.content)) {
+      payload[g.id] = { design:r.design||0, novelty:r.novelty||0, content:r.content||0 };
     }
   });
-  if(!Object.keys(validRatings).length) return;
+  if (!Object.keys(payload).length) return;
 
-  const btn=document.getElementById('submit-btn');
-  const errEl=document.getElementById('vote-err');
-  if(btn){btn.disabled=true;btn.textContent='Submitting...';}
-  if(errEl) errEl.classList.add('hidden');
+  var btn = document.getElementById('v-submit');
+  var errEl = document.getElementById('v-err');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+  if (errEl) errEl.classList.add('hidden');
 
-  try{
-    if(isStudent){
-      const sSnap=await db.collection('classes').doc(classId).collection('students').doc(voter.studentDocId).get();
-      if(!sSnap.exists) throw new Error('Student record not found.');
-      if(sSnap.data().hasVoted){showThanks(true);return;}
-    }
-    const batch=db.batch();
-    const voteRef=db.collection('classes').doc(classId).collection('votes').doc();
-    batch.set(voteRef,{
-      voterType:voter.type,
-      voterName:voter.name,
-      studentDocId:voter.studentDocId||null,
-      ratings:validRatings,
-      submittedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  function doWrite() {
+    var batch = DB.batch();
+    var voteRef = DB.collection('classes').doc(CLS_ID).collection('votes').doc();
+    batch.set(voteRef, {
+      voterType:    VOTER.type,
+      voterName:    VOTER.name,
+      studentDocId: VOTER.studentDocId || null,
+      ratings:      payload,
+      submittedAt:  firebase.firestore.FieldValue.serverTimestamp()
     });
-    if(isStudent){
+    if (isStu && VOTER.studentDocId) {
       batch.update(
-        db.collection('classes').doc(classId).collection('students').doc(voter.studentDocId),
-        {hasVoted:true}
+        DB.collection('classes').doc(CLS_ID).collection('students').doc(VOTER.studentDocId),
+        { hasVoted: true }
       );
     }
-    await batch.commit();
-    showThanks(false,validRatings);
-  }catch(e){
-    if(errEl){errEl.textContent='\u26A0\uFE0F '+e.message;errEl.classList.remove('hidden');}
-    if(btn){btn.disabled=false;btn.textContent='\u{1F5F3} Submit All Ratings';}
+    return batch.commit();
   }
+
+  var checkPromise = (isStu && VOTER.studentDocId)
+    ? DB.collection('classes').doc(CLS_ID).collection('students').doc(VOTER.studentDocId).get()
+    : Promise.resolve(null);
+
+  checkPromise.then(function(snap) {
+    if (snap && snap.exists && snap.data().hasVoted) {
+      showThanks(true, null);
+      return Promise.resolve(null);
+    }
+    return doWrite().then(function() { showThanks(false, payload); });
+  }).catch(function(e) {
+    if (errEl) { errEl.textContent = 'Submit failed: ' + e.message; errEl.classList.remove('hidden'); }
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit Ratings'; }
+  });
 }
 
-function showThanks(alreadyVoted,validRatings){
-  const tn=document.getElementById('thanks-name');
-  if(tn) tn.textContent=voter?voter.name:'Voter';
-  const summary=document.getElementById('thanks-summary');
-  if(!summary){show('view-thanks');return;}
-  if(alreadyVoted){
-    summary.innerHTML='<p class="mu" style="font-size:.84rem;text-align:center">You have already submitted your ratings for this session.</p>';
-    show('view-thanks');return;
+function showThanks(alreadyDone, payload) {
+  var tn = document.getElementById('t-name');
+  if (tn) tn.textContent = VOTER ? VOTER.name : 'Voter';
+
+  var wrap = document.getElementById('t-summary');
+  if (!wrap) { screen('s-thanks'); return; }
+
+  if (alreadyDone) {
+    wrap.innerHTML = '<p class="mu" style="font-size:.84rem;text-align:center;padding:8px 0">You already submitted ratings for this session.</p>';
+    screen('s-thanks');
+    return;
   }
-  const grpMap={};groups.forEach(g=>grpMap[g.id]=g);
-  const rows=Object.entries(validRatings||{}).map(([gid,r])=>{
-    const g=grpMap[gid];if(!g)return'';
-    const avg=r.design&&r.novelty&&r.content?((r.design+r.novelty+r.content)/3).toFixed(1):'—';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr)">'+
-      '<span style="font-size:.85rem">'+esc(g.name)+' &mdash; <span style="color:var(--a2);font-size:.82rem">'+esc(g.projectName)+'</span></span>'+
-      '<span class="badge bgo" style="font-size:.72rem">\u2B50 '+avg+'/5</span>'+
-    '</div>';
+
+  var gMap = {};
+  GROUPS.forEach(function(g) { gMap[g.id] = g; });
+
+  var rows = Object.keys(payload || {}).map(function(gid) {
+    var g = gMap[gid];
+    if (!g) return '';
+    var r = payload[gid];
+    var cnt = [r.design,r.novelty,r.content].filter(Boolean).length;
+    var avg = cnt ? ((r.design+r.novelty+r.content)/cnt).toFixed(1) : '—';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr)">' +
+      '<div><p style="font-size:.86rem;font-weight:600">' + esc(g.name) + '</p>' +
+      '<p style="font-size:.78rem;color:var(--a2)">' + esc(g.projectName) + '</p></div>' +
+      '<span class="badge bgo">&#11088; ' + avg + '/5</span></div>';
   }).join('');
-  summary.innerHTML='<p style="font-size:.78rem;font-family:var(--fM);color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Your Ratings</p>'+rows;
-  show('view-thanks');
+
+  wrap.innerHTML =
+    '<p style="font-size:.76rem;font-family:var(--fM);color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Your Submitted Ratings</p>' + rows;
+
+  screen('s-thanks');
 }
 </script>
 </body>
