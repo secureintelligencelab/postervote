@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PosterVote — Vote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0f14;--ink2:#1e2230;
+  --muted:#7a8099;--border:#2e3347;
+  --surface:#181c28;--surface2:#1f2436;--surface3:#262d42;
+  --accent:#5b6cff;--accent2:#8b9cff;--aglow:rgba(91,108,255,.22);
+  --gold:#f6c347;--green:#3ecf8e;--red:#ff5c72;--white:#f0f2ff;
+  --rS:6px;--r:12px;--rL:20px;
+  --fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--ink);color:var(--white);font-family:var(--fB);line-height:1.6;min-height:100vh}
+h1,h2,h3{font-family:var(--fH);line-height:1.2;font-weight:700}
+button{cursor:pointer;border:none;outline:none;font-family:var(--fB);transition:all .18s}
+input{font-family:var(--fB);outline:none;border:1.5px solid var(--border);background:var(--surface3);color:var(--white);border-radius:var(--rS);padding:9px 13px;font-size:.94rem;width:100%;transition:border-color .15s}
+input:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--ink2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.page{min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--ink2);position:sticky;top:0;z-index:100}
+.brand{font-family:var(--fH);font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:7px}
+.content{flex:1;padding:26px;max-width:700px;margin:0 auto;width:100%}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rS);font-size:.9rem;font-weight:600;font-family:var(--fH);cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);box-shadow:0 0 18px var(--aglow);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:.74rem;font-weight:600;font-family:var(--fM)}
+.b-green{background:rgba(62,207,142,.1);color:var(--green);border:1px solid var(--green)}
+.b-accent{background:var(--aglow);color:var(--accent2);border:1px solid var(--accent)}
+.b-gold{background:rgba(246,195,71,.1);color:var(--gold);border:1px solid var(--gold)}
+.b-muted{background:var(--surface3);color:var(--muted);border:1px solid var(--border)}
+.alert{padding:11px 14px;border-radius:var(--rS);font-size:.85rem;margin-bottom:14px}
+.alert-err{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--red)}
+.alert-info{background:var(--aglow);border:1px solid rgba(91,108,255,.3);color:var(--accent2)}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fl{font-size:.76rem;font-family:var(--fM);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.muted{color:var(--muted)}
+.flex{display:flex;align-items:center;gap:10px}
+.hidden{display:none!important}
+.spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.center-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.15) 0%,var(--ink) 70%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .35s ease}
+/* Radio group */
+.radio-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border:2px solid var(--border);border-radius:var(--rS);background:var(--surface2);cursor:pointer;transition:all .15s;margin-bottom:8px}
+.radio-item:hover{border-color:var(--accent2)}
+.radio-item.sel{border-color:var(--accent);background:var(--aglow)}
+.radio-item input[type=radio]{width:auto;margin-top:3px;accent-color:var(--accent)}
+/* Stars */
+.stars{display:flex;gap:5px;flex-wrap:wrap}
+.star{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;background:var(--surface3);border:1px solid var(--border);transition:all .12s;-webkit-user-select:none;user-select:none}
+.star.on{background:var(--gold);border-color:var(--gold)}
+.star:hover{transform:scale(1.1)}
+/* Criteria box */
+.criteria-box{padding:15px;background:var(--surface2);border-radius:var(--rS);border:1px solid var(--border);margin-bottom:12px}
+.pbar-w{height:7px;background:var(--surface3);border-radius:100px;overflow:hidden}
+.pbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+@media(max-width:520px){.content{padding:14px}.topbar{padding:11px 14px}}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="view-loading" class="center-page">
+  <span class="spinner" style="width:36px;height:36px"></span>
+</div>
+
+<!-- No config / error -->
+<div id="view-error" class="hidden center-page">
+  <div class="fu" style="text-align:center;max-width:400px">
+    <div style="font-size:3rem;margin-bottom:12px">❌</div>
+    <h2 id="err-title" style="margin-bottom:8px">Error</h2>
+    <p id="err-msg" class="muted" style="font-size:.9rem"></p>
+  </div>
+</div>
+
+<!-- Voting closed -->
+<div id="view-closed" class="hidden center-page">
+  <div class="fu" style="text-align:center;max-width:420px">
+    <div style="font-size:3.5rem;margin-bottom:14px">⏸</div>
+    <h1 id="closed-cls" style="font-size:1.7rem;margin-bottom:8px"></h1>
+    <p class="muted" style="font-size:.9rem">Voting is not open yet. Your instructor will open voting when the poster session begins.</p>
+  </div>
+</div>
+
+<!-- PIN entry -->
+<div id="view-pin" class="hidden center-page">
+  <div class="fu" style="width:100%;max-width:390px">
+    <div style="text-align:center;margin-bottom:34px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:14px;background:var(--accent);margin-bottom:13px;font-size:1.7rem;box-shadow:0 0 26px var(--aglow)">🗳</div>
+      <h1 id="pin-cls-name" style="font-size:1.7rem;margin-bottom:4px"></h1>
+      <p class="muted" style="font-size:.88rem">Poster Session Voting</p>
+    </div>
+    <div class="card">
+      <h2 style="font-size:1.05rem;margin-bottom:18px">Enter Your PIN</h2>
+      <div id="pin-err" class="alert alert-err hidden"></div>
+      <div class="fg">
+        <label class="fl">Your 6-character PIN</label>
+        <input id="pin-inp" maxlength="8" placeholder="e.g. A3BK9Z" autocomplete="off" autocapitalize="characters"
+          style="font-family:var(--fM);letter-spacing:.15em;font-size:1.3rem;text-align:center"
+          oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter')verifyPin()"/>
+      </div>
+      <button class="btn btn-primary" id="pin-btn" onclick="verifyPin()" style="width:100%;justify-content:center;margin-top:6px;padding:12px">Verify & Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Voting form -->
+<div id="view-vote" class="hidden page">
+  <div class="topbar">
+    <div class="brand">🗳 PosterVote</div>
+    <div class="flex">
+      <span class="badge b-green">🟢 Voting Open</span>
+      <span class="muted" style="font-size:.83rem">Voting as <strong id="voter-name"></strong></span>
+    </div>
+  </div>
+  <div class="content">
+    <div style="margin-bottom:24px">
+      <h1 style="font-size:1.55rem;margin-bottom:5px">Cast Your Vote</h1>
+      <p class="muted" style="font-size:.88rem">Select a poster project, then rate it across three criteria. You can vote only once.</p>
+    </div>
+    <div id="vote-own-warn" class="alert alert-info hidden">ℹ️ You are in a group — you cannot vote for your own project.</div>
+    <div id="vote-err" class="alert alert-err hidden"></div>
+
+    <!-- Step 1: group -->
+    <div class="card">
+      <h3 style="margin-bottom:14px">1. Choose a Poster Project</h3>
+      <div id="group-list"></div>
+    </div>
+
+    <!-- Step 2: rate -->
+    <div class="card">
+      <h3 style="margin-bottom:4px">2. Rate the Poster</h3>
+      <p class="muted" style="font-size:.84rem;margin-bottom:18px">Rate 1 (poor) to 5 (excellent) for each criterion.</p>
+      <div class="criteria-box">
+        <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+          <div>
+            <p style="font-weight:600;margin-bottom:2px">🎨 Design</p>
+            <p class="muted" style="font-size:.8rem">Visual layout, aesthetics and presentation quality</p>
+          </div>
+          <div class="stars" id="stars-design"></div>
+        </div>
+      </div>
+      <div class="criteria-box">
+        <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+          <div>
+            <p style="font-weight:600;margin-bottom:2px">💡 Novelty</p>
+            <p class="muted" style="font-size:.8rem">Originality and innovation of the concept</p>
+          </div>
+          <div class="stars" id="stars-novelty"></div>
+        </div>
+      </div>
+      <div class="criteria-box">
+        <div class="flex" style="justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+          <div>
+            <p style="font-weight:600;margin-bottom:2px">📖 Content</p>
+            <p class="muted" style="font-size:.8rem">Depth, accuracy and clarity of information</p>
+          </div>
+          <div class="stars" id="stars-content"></div>
+        </div>
+      </div>
+      <!-- Average -->
+      <div id="avg-box" class="hidden" style="margin-top:14px;padding:11px 14px;background:var(--aglow);border:1px solid var(--accent);border-radius:var(--rS);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-weight:600">Average Score</span>
+        <span id="avg-val" class="badge b-accent" style="font-size:.88rem"></span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="submit-btn" onclick="submitVote()" disabled
+      style="width:100%;justify-content:center;padding:14px;font-size:1rem;margin-bottom:10px">
+      🗳 Submit My Vote
+    </button>
+    <p class="muted" style="font-size:.79rem;text-align:center">You can only vote once. Your vote cannot be changed after submission.</p>
+  </div>
+</div>
+
+<!-- Thank you -->
+<div id="view-thanks" class="hidden center-page" style="background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(62,207,142,.12) 0%,var(--ink) 70%)">
+  <div class="fu" style="text-align:center;max-width:420px">
+    <div style="font-size:4rem;margin-bottom:14px">🏆</div>
+    <h1 style="font-size:2rem;margin-bottom:8px">Vote Recorded!</h1>
+    <p class="muted" style="margin-bottom:22px;font-size:.9rem">
+      Thank you, <strong id="thanks-name"></strong>! Your vote has been submitted. Results will be announced after the session closes.
+    </p>
+    <span class="badge b-green" style="font-size:.88rem;padding:8px 18px">✅ Your vote has been counted</span>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let db;
+let classId   = null;
+let classData = null;
+let groups    = [];
+let student   = null;   // verified student doc
+let selectedGroupId = null;
+let scores = { design:0, novelty:0, content:0 };
+const VIEWS=['view-loading','view-error','view-closed','view-pin','view-vote','view-thanks'];
+function show(id){ VIEWS.forEach(v=>document.getElementById(v).classList.toggle('hidden',v!==id)); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+window.onload = async () => {
+  // Read classId from URL ?class=...
+  const params = new URLSearchParams(location.search);
+  classId = params.get('class');
+  if (!classId) { showError('Invalid Link', 'This voting link is missing the class identifier.'); return; }
+
+  // Load Firebase config from localStorage (set by admin on same domain)
+  let cfg;
+  try { cfg = JSON.parse(localStorage.getItem('pv_config')||'null'); } catch{}
+  if (!cfg) { showError('Setup Required', 'Firebase config not found. Please ask your instructor to configure the system.'); return; }
+
+  try {
+    firebase.initializeApp(cfg);
+    db = firebase.firestore();
+  } catch(e) {
+    showError('Firebase Error', e.message);
+    return;
+  }
+
+  // Load class
+  try {
+    const snap = await db.collection('classes').doc(classId).get();
+    if (!snap.exists) { showError('Class Not Found', 'This voting link is invalid or has expired.'); return; }
+    classData = { id: snap.id, ...snap.data() };
+    const grpSnap = await db.collection('classes').doc(classId).collection('groups').get();
+    groups = grpSnap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e) {
+    showError('Load Error', e.message);
+    return;
+  }
+
+  if (!classData.votingOpen) {
+    document.getElementById('closed-cls').textContent = classData.name;
+    show('view-closed');
+    return;
+  }
+
+  document.getElementById('pin-cls-name').textContent = classData.name;
+  show('view-pin');
+};
+
+function showError(title, msg) {
+  document.getElementById('err-title').textContent = title;
+  document.getElementById('err-msg').textContent   = msg;
+  show('view-error');
+}
+
+// ─── PIN verification ────────────────────────────────────────────────────────
+async function verifyPin() {
+  const pin = document.getElementById('pin-inp').value.toUpperCase().trim();
+  if (pin.length < 4) return;
+  const btn = document.getElementById('pin-btn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  document.getElementById('pin-err').classList.add('hidden');
+  try {
+    const snap = await db.collection('classes').doc(classId).collection('students')
+      .where('pin','==',pin).limit(1).get();
+    if (snap.empty) {
+      document.getElementById('pin-err').textContent = 'Invalid PIN. Please check and try again.';
+      document.getElementById('pin-err').classList.remove('hidden');
+      btn.disabled=false; btn.textContent='Verify & Continue →';
+      return;
+    }
+    student = { id: snap.docs[0].id, ...snap.docs[0].data() };
+    if (student.hasVoted) { showThanks(); return; }
+    buildVoteForm();
+    show('view-vote');
+  } catch(e) {
+    document.getElementById('pin-err').textContent = 'Error: '+e.message;
+    document.getElementById('pin-err').classList.remove('hidden');
+    btn.disabled=false; btn.textContent='Verify & Continue →';
+  }
+}
+
+// ─── Vote form ───────────────────────────────────────────────────────────────
+function buildVoteForm() {
+  document.getElementById('voter-name').textContent = student.name;
+  if (student.groupId) document.getElementById('vote-own-warn').classList.remove('hidden');
+
+  const votable = groups.filter(g=>g.id!==student.groupId);
+  document.getElementById('group-list').innerHTML = votable.length
+    ? votable.map(g=>`
+        <div class="radio-item" id="ri-${g.id}" onclick="selectGroup('${g.id}')">
+          <input type="radio" name="grp" value="${g.id}" onchange="selectGroup('${g.id}')"/>
+          <div>
+            <p style="font-weight:700;margin-bottom:2px">${esc(g.name)}</p>
+            <p style="color:var(--accent2);font-size:.88rem">📋 ${esc(g.projectName)}</p>
+          </div>
+        </div>`).join('')
+    : '<p class="muted">No eligible groups to vote for.</p>';
+
+  buildStars('stars-design',  'design');
+  buildStars('stars-novelty', 'novelty');
+  buildStars('stars-content', 'content');
+}
+
+function selectGroup(id) {
+  selectedGroupId = id;
+  document.querySelectorAll('.radio-item').forEach(el=>{
+    el.classList.toggle('sel', el.id==='ri-'+id);
+    const inp = el.querySelector('input[type=radio]');
+    if(inp) inp.checked = (el.id==='ri-'+id);
+  });
+  checkReady();
+}
+
+function buildStars(containerId, key) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = [1,2,3,4,5].map(n=>`
+    <div class="star" id="star-${key}-${n}" onclick="setScore('${key}',${n})">★</div>
+  `).join('');
+}
+
+function setScore(key, val) {
+  scores[key] = val;
+  for(let n=1;n<=5;n++) {
+    document.getElementById(`star-${key}-${n}`).classList.toggle('on', n<=val);
+  }
+  updateAvg();
+  checkReady();
+}
+
+function updateAvg() {
+  const {design,novelty,content} = scores;
+  if (design && novelty && content) {
+    const avg = ((design+novelty+content)/3).toFixed(1);
+    document.getElementById('avg-val').textContent = `⭐ ${avg} / 5`;
+    document.getElementById('avg-box').classList.remove('hidden');
+  } else {
+    document.getElementById('avg-box').classList.add('hidden');
+  }
+}
+
+function checkReady() {
+  const ok = selectedGroupId && scores.design && scores.novelty && scores.content;
+  document.getElementById('submit-btn').disabled = !ok;
+}
+
+// ─── Submit ──────────────────────────────────────────────────────────────────
+async function submitVote() {
+  document.getElementById('vote-err').classList.add('hidden');
+  if (!selectedGroupId) return;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='Submitting…';
+
+  try {
+    // Re-check student hasn't voted (race condition guard)
+    const stuSnap = await db.collection('classes').doc(classId).collection('students').doc(student.id).get();
+    if (!stuSnap.exists) throw new Error('Student not found.');
+    const stuData = stuSnap.data();
+    if (stuData.hasVoted) { showThanks(); return; }
+    if (stuData.groupId === selectedGroupId) throw new Error('You cannot vote for your own group.');
+
+    const total = (scores.design+scores.novelty+scores.content)/3;
+    const batch = db.batch();
+    const voteRef = db.collection('classes').doc(classId).collection('votes').doc();
+    batch.set(voteRef, {
+      studentDocId: student.id,
+      groupId: selectedGroupId,
+      scores,
+      total,
+      votedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    batch.update(db.collection('classes').doc(classId).collection('students').doc(student.id), {
+      hasVoted: true, votedForGroupId: selectedGroupId,
+    });
+    await batch.commit();
+    showThanks();
+  } catch(e) {
+    const errEl = document.getElementById('vote-err');
+    errEl.textContent = '⚠️ '+e.message;
+    errEl.classList.remove('hidden');
+    btn.disabled=false; btn.textContent='🗳 Submit My Vote';
+  }
+}
+
+function showThanks() {
+  document.getElementById('thanks-name').textContent = student?.name || 'Student';
+  show('view-thanks');
+}
+</script>
+</body>
+</html>
