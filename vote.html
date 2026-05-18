@@ -378,9 +378,9 @@ function renderCards() {
     if (own) {
       html += '<p class="mu" style="font-size:.82rem">You cannot rate your own project.</p>';
     } else {
-      html += critRow(g.id, 'design',  '&#127912; Design',  'Visual quality, layout and aesthetics');
-      html += critRow(g.id, 'novelty', '&#128161; Novelty', 'Originality and innovation of the idea');
-      html += critRow(g.id, 'content', '&#128214; Content',  'Depth, accuracy and clarity of information');
+      html += critRow(g.id, 'design',  '&#127912; Design, clarity, demonstration, Q and A',  'Visual quality, layout and aesthetics, team communication, presentation quality');
+      html += critRow(g.id, 'novelty', '&#128161; Novelty, Innovation and Originality', 'Originality and innovation of the idea');
+      html += critRow(g.id, 'content', '&#128214; Content, Technical quality, Problem Relevance and Impact',  'Depth, accuracy and clarity of information');
     }
     html += '</div>';
   });
