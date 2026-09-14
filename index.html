@@ -14,7 +14,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--g2:#ffda80;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--rS:6px;--r:12px;--rL:20px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
+:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--g2:#ffda80;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--tc:#9b59b6;--t2:#be90d4;--tg:rgba(155,89,182,.2);--rS:6px;--r:12px;--rL:20px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
 html{font-size:16px;scroll-behavior:smooth}
 body{background:var(--ink);color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
 h1,h2,h3,h4{font-family:var(--fH);line-height:1.2;font-weight:700}
@@ -41,6 +41,7 @@ select option{background:var(--s3)}
 .bgn{background:rgba(62,207,142,.1);color:var(--gn);border:1px solid var(--gn)}
 .bgo{background:rgba(246,195,71,.1);color:var(--go);border:1px solid var(--go)}
 .brd{background:rgba(255,92,114,.1);color:var(--rd);border:1px solid var(--rd)}
+.btcb{background:rgba(155,89,182,.12);color:var(--t2);border:1px solid var(--tc)}
 .alert{padding:10px 14px;border-radius:var(--rS);font-size:.84rem;margin-bottom:12px}
 .ae{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--rd)}
 .ao{background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3);color:var(--gn)}
@@ -77,6 +78,8 @@ tbody tr:hover{background:var(--s2)}
 .ck-item input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--ac)}
 .qr-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;text-align:center}
 .qr-card canvas{border-radius:6px;margin:8px auto;display:block}
+.campus-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:600;font-family:var(--fM);background:rgba(91,108,255,.12);color:var(--a2);border:1px solid var(--ac)}
+.winner-banner{background:linear-gradient(135deg,rgba(246,195,71,.12),rgba(246,195,71,.04));border:2px solid var(--go);border-radius:var(--r);padding:16px;margin-bottom:14px}
 @media print{.no-print{display:none!important}body{background:#fff;color:#000}.qr-card{border:1px solid #ccc;page-break-inside:avoid;background:#fff}canvas{border-radius:4px}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
@@ -93,7 +96,7 @@ tbody tr:hover{background:var(--s2)}
   <div style="text-align:center;margin-bottom:32px">
     <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:15px;background:var(--ac);margin-bottom:12px;font-size:1.8rem;box-shadow:0 0 28px var(--ag)">&#127942;</div>
     <h1 style="font-size:1.8rem;margin-bottom:4px">PosterVote</h1>
-    <p class="mu" style="font-size:.88rem">Poster Session Voting System</p>
+    <p class="mu" style="font-size:.88rem">Campus Poster Session Voting System</p>
   </div>
   <div class="card">
     <h2 style="font-size:1.05rem;margin-bottom:18px">Admin Login</h2>
@@ -107,31 +110,77 @@ tbody tr:hover{background:var(--s2)}
 </div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="view-dashboard" class="hidden page">
+<!-- SEMESTERS: top level -->
+<div id="view-semesters" class="hidden page">
   <div class="topbar">
     <div class="brand">&#127942; PosterVote</div>
     <div class="flex"><span class="badge ba">Admin</span><button class="btn bs bsm" onclick="doLogout()">Log out</button></div>
   </div>
   <div class="content">
     <div class="between" style="margin-bottom:26px">
-      <div><h1 style="font-size:1.65rem;margin-bottom:3px">Classes</h1><p class="mu" style="font-size:.87rem">Manage courses, students, groups and voting.</p></div>
-      <button class="btn bp" onclick="openCreateClass()">+ New Class</button>
+      <div><h1 style="font-size:1.65rem;margin-bottom:3px">Semesters</h1><p class="mu" style="font-size:.87rem">Each semester holds its own campuses. Campuses hold the students, groups and voting sessions.</p></div>
+      <button class="btn bp" onclick="openCreateSemester()">+ New Semester</button>
     </div>
-    <div id="classes-grid" class="g3"></div>
+    <div id="semesters-grid" class="g3"></div>
   </div>
 </div>
 
-<!-- CLASS PAGE -->
-<div id="view-class" class="hidden page">
+<!-- DASHBOARD: Campus list inside a semester -->
+<div id="view-dashboard" class="hidden page">
   <div class="topbar">
-    <div class="flex"><button class="btn bs bsm" onclick="showDashboard()">&#8592; Back</button><div class="brand">&#127942; PosterVote</div></div>
+    <div class="flex"><button class="btn bs bsm" onclick="showSemesters()">&#8592; Semesters</button><div class="brand">&#127942; PosterVote</div></div>
+    <div class="flex"><span class="badge ba">Admin</span><button class="btn bs bsm" onclick="doLogout()">Log out</button></div>
+  </div>
+  <div class="content">
+    <div class="between" style="margin-bottom:26px">
+      <div>
+        <p id="dash-crumb" class="fl" style="margin-bottom:4px"></p>
+        <h1 id="dash-title" style="font-size:1.65rem;margin-bottom:3px">Campuses</h1>
+        <p id="dash-desc" class="mu" style="font-size:.87rem">Each campus has its own students, groups, voting session and Best Poster winner.</p>
+      </div>
+      <div class="flex">
+        <button class="btn bgold" onclick="showSemesterResults()">&#127942; Semester Results</button>
+        <button class="btn bp" onclick="openCreateCampus()">+ New Campus</button>
+      </div>
+    </div>
+    <div id="campuses-grid" class="g3"></div>
+  </div>
+</div>
+
+<!-- SEMESTER RESULTS: winner per campus -->
+<div id="view-semres" class="hidden page">
+  <div class="topbar">
+    <div class="flex"><button class="btn bs bsm" onclick="showDashboard()">&#8592; Campuses</button><div class="brand">&#127942; PosterVote</div></div>
+    <div class="flex">
+      <button class="btn bs bsm" onclick="loadSemesterResults()">&#8635; Refresh</button>
+      <button class="btn bs bsm" onclick="doLogout()">Log out</button>
+    </div>
+  </div>
+  <div class="content">
+    <div style="margin-bottom:22px">
+      <p id="semres-crumb" class="fl" style="margin-bottom:4px"></p>
+      <h1 id="semres-title" style="font-size:1.55rem;margin-bottom:6px"></h1>
+      <p class="mu" style="font-size:.85rem">Best Poster for every campus in this semester. Open a campus for its full leaderboard.</p>
+    </div>
+    <div id="semres-list"></div>
+  </div>
+</div>
+
+<!-- CAMPUS PAGE -->
+<div id="view-campus" class="hidden page">
+  <div class="topbar">
+    <div class="flex"><button class="btn bs bsm" onclick="showDashboard()">&#8592; Campuses</button><div class="brand">&#127942; PosterVote</div></div>
     <div class="flex"><span class="badge ba">Admin</span><button class="btn bs bsm" onclick="doLogout()">Log out</button></div>
   </div>
   <div class="content">
     <div class="between" style="margin-bottom:20px">
       <div>
-        <div class="flex" style="margin-bottom:4px"><h1 id="cls-name" style="font-size:1.55rem"></h1><span id="cls-vbadge" class="badge bn"></span></div>
+        <p id="cls-crumb" class="fl" style="margin-bottom:5px"></p>
+        <div class="flex" style="margin-bottom:4px">
+          <span style="font-size:1.4rem">&#127963;</span>
+          <h1 id="cls-name" style="font-size:1.55rem"></h1>
+          <span id="cls-vbadge" class="badge bn"></span>
+        </div>
         <p id="cls-desc" class="mu" style="font-size:.84rem"></p>
         <div class="flex" style="margin-top:6px;gap:16px">
           <span id="cs-s" class="mu" style="font-size:.81rem"></span>
@@ -147,22 +196,29 @@ tbody tr:hover{background:var(--s2)}
       <button class="tab-btn" data-tab="voting" onclick="switchTab(this,'voting')">&#128499; Voting</button>
       <button class="tab-btn" data-tab="qrcodes" onclick="switchTab(this,'qrcodes')">&#128241; QR Codes</button>
     </div>
-    <!-- STUDENTS -->
+
+    <!-- STUDENTS TAB -->
     <div id="tab-students">
       <div class="between" style="margin-bottom:13px">
         <input id="stu-search" placeholder="Search students..." style="max-width:230px" oninput="renderStudents()"/>
         <div class="flex">
-          <button id="btn-copyall" class="btn bs bsm hidden" onclick="copyAllPins()">&#128203; Copy All</button>
           <button id="btn-export" class="btn bs bsm hidden" onclick="exportCSV()">&#8595; Export CSV</button>
+          <button class="btn bs bsm" onclick="openAddStudent()">+ Add Student</button>
           <input id="csv-file" type="file" accept=".csv" style="display:none" onchange="handleCSV(this)"/>
           <button class="btn bp bsm" onclick="document.getElementById('csv-file').click()">&#8593; Import CSV</button>
         </div>
       </div>
       <div id="stu-msg"></div>
-      <div class="alert ai" style="font-size:.79rem;margin-bottom:12px">&#128196; CSV columns: <span class="mono">name, id, email</span> (header required). PINs auto-generated per student.</div>
+      <div id="stu-idwarn"></div>
+      <div class="alert ai" style="font-size:.79rem;margin-bottom:12px">
+        &#128273; <strong>Students sign in with their Student ID</strong> (e.g. <span class="mono">CIHE2026</span>) &mdash; case doesn't matter. Every student needs a unique ID, or they can't log in.<br/>
+        &#128196; CSV columns: <span class="mono">name, id, email, campus</span> (header required).
+        The <strong>campus</strong> column is optional &mdash; rows matching this campus name are imported here; rows for other campuses are skipped. Rows whose ID already exists are skipped, so re-importing the same file is safe.
+      </div>
       <div id="stu-empty" class="card" style="text-align:center;padding:38px">
-        <div style="font-size:2.2rem;margin-bottom:8px">&#128100;</div><h3 style="margin-bottom:5px">No students yet</h3>
-        <p class="mu" style="font-size:.86rem;margin-bottom:14px">Upload a CSV file to import students.</p>
+        <div style="font-size:2.2rem;margin-bottom:8px">&#128100;</div>
+        <h3 style="margin-bottom:5px">No students yet</h3>
+        <p class="mu" style="font-size:.86rem;margin-bottom:14px">Upload a CSV to import students into this campus.</p>
         <button class="btn bp" onclick="document.getElementById('csv-file').click()">&#8593; Import CSV</button>
       </div>
       <div id="stu-table-wrap" class="card hidden" style="padding:0;overflow:hidden">
@@ -171,34 +227,42 @@ tbody tr:hover{background:var(--s2)}
           <span id="stu-voted" class="badge bn"></span>
         </div>
         <div style="overflow-x:auto">
-          <table><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>PIN</th><th>Group</th><th>Status</th><th></th></tr></thead>
+          <table><thead><tr><th>Name</th><th>Student ID (login)</th><th>Email</th><th>Group</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
           <tbody id="stu-tbody"></tbody></table>
         </div>
       </div>
     </div>
-    <!-- GROUPS -->
+
+    <!-- GROUPS TAB -->
     <div id="tab-groups" class="hidden">
+      <div class="alert ai" style="font-size:.79rem;margin-bottom:13px">
+        &#127963; Groups are campus-scoped. Only students in <strong id="grp-campus-label"></strong> can be assigned here.
+        A student cannot vote for their own group.
+      </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
         <button class="btn bp" onclick="openCreateGroup()">+ New Group</button>
       </div>
       <div id="grp-empty" class="card" style="text-align:center;padding:38px">
-        <div style="font-size:2.2rem;margin-bottom:8px">&#128193;</div><h3 style="margin-bottom:5px">No groups yet</h3>
+        <div style="font-size:2.2rem;margin-bottom:8px">&#128193;</div>
+        <h3 style="margin-bottom:5px">No groups yet</h3>
         <p class="mu" style="font-size:.86rem;margin-bottom:14px">Create groups and assign students to poster projects.</p>
         <button class="btn bp" onclick="openCreateGroup()">+ Create Group</button>
       </div>
       <div id="grp-grid" class="g2 hidden"></div>
     </div>
-    <!-- VOTING -->
+
+    <!-- VOTING TAB -->
     <div id="tab-voting" class="hidden"><div id="voting-content"></div></div>
-    <!-- QR CODES -->
+
+    <!-- QR CODES TAB -->
     <div id="tab-qrcodes" class="hidden"><div id="qr-content"></div></div>
   </div>
 </div>
 
-<!-- RESULTS -->
+<!-- RESULTS VIEW -->
 <div id="view-results" class="hidden page">
   <div class="topbar">
-    <div class="flex"><button class="btn bs bsm" onclick="showClass()">&#8592; Back</button><div class="brand">&#127942; PosterVote</div></div>
+    <div class="flex"><button class="btn bs bsm" onclick="showCampus()">&#8592; Back</button><div class="brand">&#127942; PosterVote</div></div>
     <div class="flex">
       <button id="btn-auto" class="btn bs bsm" onclick="toggleAutoRefresh()">&#9646; Paused</button>
       <button class="btn bs bsm" onclick="loadResults()">&#8635; Refresh</button>
@@ -206,30 +270,65 @@ tbody tr:hover{background:var(--s2)}
     </div>
   </div>
   <div class="content">
-    <div style="margin-bottom:22px"><h1 id="res-title" style="font-size:1.55rem;margin-bottom:6px"></h1><div class="flex" style="flex-wrap:wrap;gap:14px" id="res-stats"></div></div>
+    <div style="margin-bottom:22px">
+      <h1 id="res-title" style="font-size:1.55rem;margin-bottom:6px"></h1>
+      <div class="flex" style="flex-wrap:wrap;gap:14px" id="res-stats"></div>
+    </div>
+    <div id="res-winner"></div>
     <div id="res-list"></div>
   </div>
 </div>
 
-<!-- MODALS -->
-<div id="modal-class" class="overlay hidden">
+<!-- MODAL: Create / Edit Semester -->
+<div id="modal-semester" class="overlay hidden">
 <div class="modal">
-  <h2 style="margin-bottom:5px">Create New Class</h2>
-  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Add a course to manage students, groups and voting.</p>
-  <div id="mcls-err" class="alert ae hidden"></div>
-  <div class="fg"><label class="fl">Class Name *</label><input id="cls-name-inp" placeholder="e.g. CS401 &mdash; Software Engineering"/></div>
-  <div class="fg"><label class="fl">Description (optional)</label><input id="cls-desc-inp" placeholder="e.g. Spring 2025 Capstone"/></div>
+  <h2 id="sem-modal-title" style="margin-bottom:5px">Create New Semester</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">A semester groups the campuses that run in the same teaching period, so each intake keeps its own students, groups and results.</p>
+  <div id="msem-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Semester Name *</label><input id="sem-name-inp" placeholder="e.g. Semester 1 2026"/></div>
+  <div class="fg"><label class="fl">Description (optional)</label><input id="sem-desc-inp" placeholder="e.g. Feb &mdash; Jun 2026 poster sessions"/></div>
   <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
-    <button class="btn bs" onclick="closeModal('modal-class')">Cancel</button>
-    <button class="btn bp" id="btn-save-cls" onclick="saveClass()">Create Class</button>
+    <button class="btn bs" onclick="closeModal('modal-semester')">Cancel</button>
+    <button class="btn bp" id="btn-save-sem" onclick="saveSemester()">Create Semester</button>
   </div>
 </div>
 </div>
 
+<!-- MODAL: Move Campus to another Semester -->
+<div id="modal-move" class="overlay hidden">
+<div class="modal">
+  <h2 style="margin-bottom:5px">Move Campus</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Moving a campus takes its students, groups and votes with it. Voting links and QR codes keep working.</p>
+  <div id="mmove-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Campus</label><input id="move-cls-name" disabled/></div>
+  <div class="fg"><label class="fl">Move to semester</label><select id="move-sem-sel"></select></div>
+  <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bs" onclick="closeModal('modal-move')">Cancel</button>
+    <button class="btn bp" id="btn-save-move" onclick="saveMoveCampus()">Move Campus</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Create Campus -->
+<div id="modal-campus" class="overlay hidden">
+<div class="modal">
+  <h2 style="margin-bottom:5px">Create New Campus</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Each campus is independent: its own students, groups, voting session and Best Poster award.</p>
+  <div id="mcls-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Campus Name *</label><input id="cls-name-inp" placeholder="e.g. Main Campus &mdash; Engineering"/></div>
+  <div class="fg"><label class="fl">Description (optional)</label><input id="cls-desc-inp" placeholder="e.g. Spring 2025 Poster Session"/></div>
+  <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bs" onclick="closeModal('modal-campus')">Cancel</button>
+    <button class="btn bp" id="btn-save-cls" onclick="saveCampus()">Create Campus</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Create / Edit Group -->
 <div id="modal-group" class="overlay hidden">
 <div class="modal wide">
   <h2 id="grp-modal-title" style="margin-bottom:5px">Create New Group</h2>
-  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Set a name, project title, and pick members.</p>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">Set a name, project title, and pick members from this campus.</p>
   <div id="mgrp-err" class="alert ae hidden"></div>
   <div class="fg"><label class="fl">Group Name *</label><input id="grp-name-inp" placeholder="e.g. Group A"/></div>
   <div class="fg"><label class="fl">Project / Poster Name *</label><input id="grp-proj-inp" placeholder="e.g. Smart Campus Waste Management"/></div>
@@ -245,6 +344,23 @@ tbody tr:hover{background:var(--s2)}
 </div>
 </div>
 
+<!-- MODAL: Add / Edit Student -->
+<div id="modal-student" class="overlay hidden">
+<div class="modal">
+  <h2 id="stu-modal-title" style="margin-bottom:5px">Add Student</h2>
+  <p class="mu" style="font-size:.83rem;margin-bottom:18px">The Student ID is the student's login &mdash; it must be unique within this campus. Case doesn't matter when they sign in.</p>
+  <div id="mstu-err" class="alert ae hidden"></div>
+  <div class="fg"><label class="fl">Full Name *</label><input id="stu-name-inp" placeholder="e.g. Alice Johnson"/></div>
+  <div class="fg"><label class="fl">Student ID *</label><input id="stu-id-inp" class="mono" placeholder="e.g. CIHE2026"/></div>
+  <div class="fg"><label class="fl">Email (optional)</label><input id="stu-email-inp" type="email" placeholder="alice@university.edu"/></div>
+  <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bs" onclick="closeModal('modal-student')">Cancel</button>
+    <button class="btn bp" id="btn-save-stu" onclick="saveStudent()">Add Student</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: QR Print -->
 <div id="modal-qr" class="overlay hidden">
 <div class="modal xl">
   <div class="between no-print" style="margin-bottom:16px">
@@ -260,211 +376,790 @@ tbody tr:hover{background:var(--s2)}
 
 <script>
 // =====================================================
-// FIREBASE CONFIG — paste yours here to update
+// FIREBASE CONFIG
 // =====================================================
 const firebaseConfig = {
-  apiKey:            "AIzaSyChFTqAhyMaGZzR9v-M0zQA3VZZGt3hQzc",
-  authDomain:        "poster-vote-b6489.firebaseapp.com",
-  projectId:         "poster-vote-b6489",
-  storageBucket:     "poster-vote-b6489.firebasestorage.app",
-  messagingSenderId: "831679598650",
-  appId:             "1:831679598650:web:f447567db5ad1a6f2d6503"
+  apiKey:            "AIzaSyCAjeQf19uJd2_2QMolg8Tu02n6FtHKxH0",
+  authDomain:        "postervote-393ae.firebaseapp.com",
+  projectId:         "postervote-393ae",
+  storageBucket:     "postervote-393ae.firebasestorage.app",
+  messagingSenderId: "346700138124",
+  appId:             "1:346700138124:web:f714e8e813edbe1dd01da9",
+  measurementId:     "G-LBLE1XRH6L"
 };
 // =====================================================
+// Firestore structure (NEW):
+//   campuses/{campusId}  (was: classes/{classId})
+//     .name, .description, .votingOpen, .guestCode, .maxVotesPerStudent
+//     /students/{studentId}  .campusId, .groupId, .studentId, .studentIdLower, .hasVoted, ...
+//     /groups/{groupId}      .campusId, .memberIds, .projectName, ...
+//     /votes/{voteId}        .voterType ('student'|'guest'), .ratings, .ratedCount, ...
+// =====================================================
 
-let db,auth,currentUser=null,currentClass=null,students=[],groups=[],editGroupId=null,selectedMemberIds=new Set(),autoTimer=null;
+let db, auth, currentUser=null, currentClass=null, students=[], groups=[], editGroupId=null, selectedMemberIds=new Set(), autoTimer=null;
+// semester layer
+let semesters=[], allCampuses=[], currentSemester=null, editSemId=null, moveClsId=null;
+// campuses created before semesters existed have no semesterId; they live in this bucket
+const UNASSIGNED = {id:null, name:'Unassigned campuses', description:'Campuses created before semesters existed. Move them into a semester to keep things tidy.'};
 
-window.onload=()=>{
-  try{
+window.onload = () => {
+  try {
     firebase.initializeApp(firebaseConfig);
-    db=firebase.firestore();
-    auth=firebase.auth();
-    auth.onAuthStateChanged(u=>{currentUser=u;if(u)showDashboard();else show('view-login');});
-  }catch(e){showEl('login-err','Firebase error: '+e.message);show('view-login');}
+    db = firebase.firestore();
+    auth = firebase.auth();
+    auth.onAuthStateChanged(u => { currentUser=u; if(u) showSemesters(); else show('view-login'); });
+  } catch(e) { showEl('login-err','Firebase error: '+e.message); show('view-login'); }
 };
 
-const VIEWS=['view-login','view-dashboard','view-class','view-results'];
-function show(id){VIEWS.forEach(v=>document.getElementById(v).classList.toggle('hidden',v!==id));}
-function showEl(id,m){const e=document.getElementById(id);e.textContent=m;e.classList.remove('hidden');}
-function hideEl(id){document.getElementById(id).classList.add('hidden');}
-function openModal(id){document.getElementById(id).classList.remove('hidden');}
-function closeModal(id){document.getElementById(id).classList.add('hidden');}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+const VIEWS = ['view-login','view-semesters','view-dashboard','view-campus','view-results','view-semres'];
+function show(id){ VIEWS.forEach(v => document.getElementById(v).classList.toggle('hidden', v!==id)); }
+function showEl(id,m){ const e=document.getElementById(id); e.textContent=m; e.classList.remove('hidden'); }
+function hideEl(id){ document.getElementById(id).classList.add('hidden'); }
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ——— AUTH ———
 async function doLogin(){
-  const email=document.getElementById('login-email').value.trim(),pw=document.getElementById('login-pw').value;
+  const email=document.getElementById('login-email').value.trim(), pw=document.getElementById('login-pw').value;
   hideEl('login-err');
-  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Signing in...';
-  try{await auth.signInWithEmailAndPassword(email,pw);}
-  catch(e){showEl('login-err','Invalid credentials.');btn.disabled=false;btn.textContent='Sign In \u2192';}
+  const btn=document.getElementById('login-btn'); btn.disabled=true; btn.textContent='Signing in...';
+  try{ await auth.signInWithEmailAndPassword(email,pw); }
+  catch(e){ showEl('login-err','Invalid credentials.'); btn.disabled=false; btn.textContent='Sign In →'; }
 }
-async function doLogout(){stopAutoRefresh();await auth.signOut();show('view-login');}
+async function doLogout(){ stopAutoRefresh(); await auth.signOut(); show('view-login'); }
+
+// ——— SEMESTERS (top level) ———
+// Campuses stay a top-level collection and simply carry a `semesterId`. That keeps
+// every existing ?campus=ID link, QR code and security rule working unchanged.
+async function loadSemesterData(){
+  const [semSnap, clsSnap] = await Promise.all([
+    db.collection('semesters').get(),
+    db.collection('campuses').get()
+  ]);
+  semesters   = semSnap.docs.map(d => ({id:d.id,...d.data()}));
+  allCampuses = clsSnap.docs.map(d => ({id:d.id,...d.data()}));
+  semesters.sort((a,b) => String(b.name||'').localeCompare(String(a.name||''), undefined, {numeric:true}));
+}
+function campusesOf(semId){
+  return allCampuses.filter(c => (c.semesterId || null) === (semId || null));
+}
+
+// Surfaces the real Firestore error instead of spinning forever. Permission
+// problems are by far the most common cause, so that case gets a checklist.
+function loadError(targetId, e, what){
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  const code = (e && e.code) || 'unknown';
+  const uid  = currentUser ? currentUser.uid : null;
+  const perm = code.indexOf('permission') > -1 || /insufficient permissions/i.test(e && e.message || '');
+  console.error('[PosterVote]', what, e);
+  el.innerHTML = `<div class="card" style="grid-column:1/-1;border-color:var(--rd)">
+    <h3 style="margin-bottom:6px;color:var(--rd)">⚠️ Couldn't load ${esc(what)}</h3>
+    <p class="mu" style="font-size:.85rem;margin-bottom:10px">${esc((e && e.message) || 'Unknown error')}</p>
+    <p class="mono mu" style="font-size:.75rem;margin-bottom:${perm?'12px':'0'}">
+      code: ${esc(code)} &nbsp;·&nbsp; project: ${esc(firebaseConfig.projectId)} &nbsp;·&nbsp; signed in: ${uid ? esc(uid) : 'NO'}
+    </p>
+    ${perm ? `<div class="alert ae" style="font-size:.82rem;margin-bottom:12px">
+      Your Firestore security rules are blocking this. Check, in order:
+      <ol style="margin:8px 0 0 18px;line-height:1.7">
+        <li>Firebase Console → Firestore Database → <strong>Rules</strong> → you clicked <strong>Publish</strong>, not just edited</li>
+        <li>The console project matches <span class="mono">${esc(firebaseConfig.projectId)}</span> above</li>
+        <li>The rules contain a <span class="mono">match /semesters/{s}</span> and a <span class="mono">match /campuses/{c}</span> block</li>
+        <li>You edited <em>Firestore</em> rules, not Realtime Database or Storage rules</li>
+      </ol></div>
+      <button class="btn bp bsm" onclick="runDiagnostics()">🔬 Run diagnostics</button>
+      <div id="diag-out" style="margin-top:12px"></div>` : ''}
+  </div>`;
+}
+
+// Probes each collection separately so we can tell WHICH rule is missing,
+// instead of guessing from a single "permission denied".
+async function runDiagnostics(){
+  const out = document.getElementById('diag-out');
+  if(!out) return;
+  out.innerHTML = '<p class="mu" style="font-size:.82rem"><span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Probing…</p>';
+
+  const probes = [
+    ['read  /semesters              (list)', () => db.collection('semesters').limit(1).get()],
+    ['read  /campuses               (list)', () => db.collection('campuses').limit(1).get()],
+    ['write /semesters/_diagnostic  (create)', async () => {
+        const ref = db.collection('semesters').doc('_diagnostic_probe');
+        await ref.set({probe:true});
+        await ref.delete();
+      }],
+  ];
+
+  const rows = [];
+  for(const [label, fn] of probes){
+    try { await fn(); rows.push({label, ok:true, code:'allowed'}); }
+    catch(e){ rows.push({label, ok:false, code:(e && e.code) || 'error', msg:(e&&e.message)||''}); }
+  }
+
+  const ok = n => rows[n] && rows[n].ok;
+  let verdict;
+  if(ok(0) && ok(1) && ok(2)){
+    verdict = 'All probes passed. The rules are fine now — reload the page.';
+  } else if(!ok(0) && !ok(1)){
+    verdict = 'Both collections are denied, so the rules you pasted are not the ones deployed on this database. '
+            + 'Most likely the Publish button was not clicked, or the project has more than one Firestore database and '
+            + 'the rules went to a different one — check the database dropdown at the top of the Firestore page. '
+            + 'App Check enforcement can also cause this: if App Check is turned on for Firestore and this app has no '
+            + 'App Check token, every request is refused no matter what the rules say.';
+  } else if(ok(1) && !ok(0)){
+    verdict = 'Campuses are readable but semesters are not — your deployed rules are the OLD set, missing the '
+            + 'match /semesters/{semesterId} block. Add it and Publish.';
+  } else if(ok(0) && !ok(2)){
+    verdict = 'Semesters can be read but not written. The semesters block is probably read-only — it needs '
+            + 'allow read, write: if request.auth != null.';
+  } else {
+    verdict = 'Mixed result — send me this table and I can narrow it down.';
+  }
+
+  out.innerHTML =
+    '<div style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rS);padding:12px">' +
+    '<p class="fl" style="margin-bottom:8px">Probe results</p>' +
+    rows.map(r => '<p class="mono" style="font-size:.76rem;color:' + (r.ok?'var(--gn)':'var(--rd)') + '">' +
+      (r.ok ? '✓ ' : '✗ ') + esc(r.label) + ' → ' + esc(r.code) + '</p>').join('') +
+    '<p style="font-size:.82rem;margin-top:10px;color:var(--wh)">' + esc(verdict) + '</p>' +
+    '<p class="mono mu" style="font-size:.72rem;margin-top:8px">project: ' + esc(firebaseConfig.projectId) +
+    ' · uid: ' + esc(currentUser ? currentUser.uid : 'none') + '</p>' +
+    '</div>';
+}
+
+async function showSemesters(){
+  stopAutoRefresh(); show('view-semesters');
+  currentSemester = null; currentClass = null;
+  const grid = document.getElementById('semesters-grid');
+  grid.innerHTML = '<div class="card" style="text-align:center;padding:40px;grid-column:1/-1"><span class="spinner"></span></div>';
+  try { await loadSemesterData(); }
+  catch(e){ loadError('semesters-grid', e, 'semesters'); return; }
+
+  const orphans = campusesOf(null);
+  if(!semesters.length && !orphans.length){
+    grid.innerHTML = '<div class="card" style="text-align:center;padding:40px;grid-column:1/-1"><div style="font-size:2.4rem;margin-bottom:10px">&#128197;</div><h3 style="margin-bottom:6px">No semesters yet</h3><p class="mu" style="margin-bottom:16px;font-size:.86rem">Create a semester first, then add campuses inside it.</p><button class="btn bp" onclick="openCreateSemester()">+ Create Semester</button></div>';
+    return;
+  }
+
+  let html = semesters.map(s => {
+    const cs = campusesOf(s.id);
+    const open = cs.filter(c => c.votingOpen).length;
+    return `<div class="card fu" style="display:flex;flex-direction:column;gap:11px">
+      <div class="between">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:1.3rem">&#128197;</div>
+        <div class="flex">
+          <button class="btn bs bsm" onclick="openEditSemester('${s.id}')" title="Rename">&#9999;&#65039;</button>
+          <button class="btn bd bsm" onclick="deleteSemester('${s.id}','${esc(s.name)}')" title="Delete">&#128465;</button>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.96rem;margin-bottom:3px">${esc(s.name)}</h3>
+        ${s.description ? `<p class="mu" style="font-size:.82rem">${esc(s.description)}</p>` : ''}
+      </div>
+      <div class="flex" style="flex-wrap:wrap;gap:5px">
+        <span class="badge bn">&#127963; ${cs.length} campus${cs.length===1?'':'es'}</span>
+        ${open ? `<span class="badge bgn">&#128994; ${open} voting open</span>` : ''}
+      </div>
+      <button class="btn bs" style="margin-top:auto;justify-content:center" onclick="openSemester('${s.id}')">Open Semester &#8594;</button>
+    </div>`;
+  }).join('');
+
+  if(orphans.length){
+    const open = orphans.filter(c => c.votingOpen).length;
+    html += `<div class="card fu" style="display:flex;flex-direction:column;gap:11px;border-color:rgba(246,195,71,.45)">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(246,195,71,.12);border:1px solid var(--go);display:flex;align-items:center;justify-content:center;font-size:1.3rem">&#128193;</div>
+      <div>
+        <h3 style="font-size:.96rem;margin-bottom:3px">Unassigned campuses</h3>
+        <p class="mu" style="font-size:.82rem">Created before semesters existed. Open to move them into one.</p>
+      </div>
+      <div class="flex" style="flex-wrap:wrap;gap:5px">
+        <span class="badge bgo">&#127963; ${orphans.length} campus${orphans.length===1?'':'es'}</span>
+        ${open ? `<span class="badge bgn">&#128994; ${open} voting open</span>` : ''}
+      </div>
+      <button class="btn bs" style="margin-top:auto;justify-content:center" onclick="openSemester(null)">Open &#8594;</button>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function openCreateSemester(){
+  editSemId = null;
+  document.getElementById('sem-modal-title').textContent = 'Create New Semester';
+  document.getElementById('btn-save-sem').textContent = 'Create Semester';
+  document.getElementById('sem-name-inp').value = '';
+  document.getElementById('sem-desc-inp').value = '';
+  hideEl('msem-err'); openModal('modal-semester');
+}
+function openEditSemester(id){
+  const s = semesters.find(x => x.id === id); if(!s) return;
+  editSemId = id;
+  document.getElementById('sem-modal-title').textContent = 'Edit Semester';
+  document.getElementById('btn-save-sem').textContent = 'Save Changes';
+  document.getElementById('sem-name-inp').value = s.name || '';
+  document.getElementById('sem-desc-inp').value = s.description || '';
+  hideEl('msem-err'); openModal('modal-semester');
+}
+async function saveSemester(){
+  const name = document.getElementById('sem-name-inp').value.trim();
+  const desc = document.getElementById('sem-desc-inp').value.trim();
+  if(!name){ showEl('msem-err','Semester name is required.'); return; }
+  const clash = semesters.find(s => s.id !== editSemId && (s.name||'').toLowerCase() === name.toLowerCase());
+  if(clash){ showEl('msem-err','A semester called "'+name+'" already exists.'); return; }
+
+  const btn = document.getElementById('btn-save-sem'); btn.disabled = true;
+  try{
+    if(editSemId){
+      await db.collection('semesters').doc(editSemId).update({name, description:desc});
+      closeModal('modal-semester'); await showSemesters();
+    } else {
+      const ref = await db.collection('semesters').add({name, description:desc,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      closeModal('modal-semester');
+      await loadSemesterData();
+      await openSemester(ref.id);
+    }
+  } catch(e){ showEl('msem-err', e.message); }
+  btn.disabled = false;
+}
+async function deleteSemester(id, name){
+  const cs = campusesOf(id);
+  if(cs.length){
+    alert('"'+name+'" still contains '+cs.length+' campus'+(cs.length===1?'':'es')+'.\n\n'+
+          'Open the semester and delete or move those campuses first — this protects their students, groups and votes from being wiped by accident.');
+    return;
+  }
+  if(!confirm('Delete the semester "'+name+'"? It has no campuses, so nothing else is removed.')) return;
+  await db.collection('semesters').doc(id).delete();
+  await showSemesters();
+}
+
+// ——— CAMPUS LIST (inside one semester) ———
+async function openSemester(semId){
+  if(!allCampuses.length && !semesters.length) await loadSemesterData();
+  currentSemester = semId ? (semesters.find(s => s.id === semId) || UNASSIGNED) : UNASSIGNED;
+  await showDashboard();
+}
 
 async function showDashboard(){
-  stopAutoRefresh();show('view-dashboard');
-  const snap=await db.collection('classes').get();
-  const cls=snap.docs.map(d=>({id:d.id,...d.data()}));
-  const grid=document.getElementById('classes-grid');
-  if(!cls.length){grid.innerHTML='<div class="card" style="text-align:center;padding:40px;grid-column:1/-1"><div style="font-size:2.2rem;margin-bottom:10px">\u{1F393}</div><h3 style="margin-bottom:6px">No classes yet</h3><p class="mu" style="margin-bottom:16px;font-size:.86rem">Create your first class to get started.</p><button class="btn bp" onclick="openCreateClass()">+ Create Class</button></div>';return;}
-  grid.innerHTML=cls.map(c=>'<div class="card fu" style="display:flex;flex-direction:column;gap:11px"><div class="between"><div style="width:40px;height:40px;border-radius:10px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:1.25rem">\u{1F4DA}</div><button class="btn bd bsm" onclick="deleteClass(\''+c.id+'\',\''+esc(c.name)+'\')">\u{1F5D1}</button></div><div><h3 style="font-size:.96rem;margin-bottom:3px">'+esc(c.name)+'</h3>'+(c.description?'<p class="mu" style="font-size:.82rem">'+esc(c.description)+'</p>':'')+'</div><button class="btn bs" style="margin-top:auto;justify-content:center" onclick="openClass(\''+c.id+'\')">Open Class \u2192</button></div>').join('');
+  stopAutoRefresh(); show('view-dashboard');
+  if(!currentSemester){ await showSemesters(); return; }
+  try { await loadSemesterData(); }
+  catch(e){ loadError('campuses-grid', e, 'campuses'); return; }
+  // refresh the reference in case the name changed
+  if(currentSemester.id) currentSemester = semesters.find(s => s.id === currentSemester.id) || UNASSIGNED;
+
+  document.getElementById('dash-crumb').textContent = currentSemester.id ? 'Semester' : '';
+  document.getElementById('dash-title').textContent = currentSemester.name;
+  document.getElementById('dash-desc').textContent = currentSemester.description ||
+    'Each campus has its own students, groups, voting session and Best Poster winner.';
+
+  const list = campusesOf(currentSemester.id);
+  const grid = document.getElementById('campuses-grid');
+  if(!list.length){
+    grid.innerHTML = '<div class="card" style="text-align:center;padding:40px;grid-column:1/-1"><div style="font-size:2.4rem;margin-bottom:10px">&#127963;</div><h3 style="margin-bottom:6px">No campuses yet</h3><p class="mu" style="margin-bottom:16px;font-size:.86rem">Create your first campus to get started.</p><button class="btn bp" onclick="openCreateCampus()">+ Create Campus</button></div>';
+    return;
+  }
+  grid.innerHTML = list.map(c => {
+    const open = c.votingOpen;
+    return `<div class="card fu" style="display:flex;flex-direction:column;gap:11px">
+      <div class="between">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:1.35rem">&#127963;</div>
+        <div class="flex">
+          <button class="btn bs bsm" onclick="openMoveCampus('${c.id}')" title="Move to another semester">&#8644;</button>
+          <button class="btn bd bsm" onclick="deleteCampus('${c.id}','${esc(c.name)}')" title="Delete">&#128465;</button>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:.96rem;margin-bottom:3px">${esc(c.name)}</h3>
+        ${c.description ? `<p class="mu" style="font-size:.82rem">${esc(c.description)}</p>` : ''}
+      </div>
+      <div class="flex" style="flex-wrap:wrap;gap:5px">
+        ${open ? '<span class="badge bgn">&#128994; Voting Open</span>' : '<span class="badge bn">&#9646; Closed</span>'}
+      </div>
+      <button class="btn bs" style="margin-top:auto;justify-content:center" onclick="openCampus('${c.id}')">Open Campus &#8594;</button>
+    </div>`;
+  }).join('');
 }
 
-function openCreateClass(){document.getElementById('cls-name-inp').value='';document.getElementById('cls-desc-inp').value='';hideEl('mcls-err');openModal('modal-class');}
-async function saveClass(){
-  const name=document.getElementById('cls-name-inp').value.trim();
-  if(!name){showEl('mcls-err','Name required.');return;}
-  const btn=document.getElementById('btn-save-cls');btn.disabled=true;btn.textContent='Creating...';
+// ——— CREATE / DELETE CAMPUS ———
+function openCreateCampus(){
+  document.getElementById('cls-name-inp').value='';
+  document.getElementById('cls-desc-inp').value='';
+  hideEl('mcls-err'); openModal('modal-campus');
+}
+async function saveCampus(){
+  const name = document.getElementById('cls-name-inp').value.trim();
+  if(!name){ showEl('mcls-err','Campus name required.'); return; }
+  if(!currentSemester || !currentSemester.id){
+    showEl('mcls-err','Open a semester first — every new campus belongs to one.'); return;
+  }
+  const btn = document.getElementById('btn-save-cls'); btn.disabled=true; btn.textContent='Creating...';
   try{
-    const ref=await db.collection('classes').add({name,description:document.getElementById('cls-desc-inp').value.trim(),createdAt:firebase.firestore.FieldValue.serverTimestamp(),votingOpen:false,guestCode:''});
-    closeModal('modal-class');await openClass(ref.id);
-  }catch(e){showEl('mcls-err',e.message);}
-  btn.disabled=false;btn.textContent='Create Class';
+    const ref = await db.collection('campuses').add({
+      name, description: document.getElementById('cls-desc-inp').value.trim(),
+      semesterId: currentSemester.id,
+      semesterName: currentSemester.name,          // denormalised for display only
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      votingOpen: false, guestCode: '', teacherCode: '', maxVotesPerStudent: 3
+    });
+    closeModal('modal-campus');
+    await loadSemesterData();
+    await openCampus(ref.id);
+  } catch(e){ showEl('mcls-err',e.message); }
+  btn.disabled=false; btn.textContent='Create Campus';
 }
-async function deleteClass(id,name){
-  if(!confirm('Delete class "'+name+'" and ALL data?'))return;
-  const batch=db.batch();
-  for(const sub of['students','groups','votes']){const s=await db.collection('classes').doc(id).collection(sub).get();s.forEach(d=>batch.delete(d.ref));}
-  batch.delete(db.collection('classes').doc(id));await batch.commit();showDashboard();
+async function deleteCampus(id, name){
+  if(!confirm('Delete campus "'+name+'" and ALL its data? This cannot be undone.')) return;
+  const batch = db.batch();
+  for(const sub of ['students','groups','votes']){
+    const s = await db.collection('campuses').doc(id).collection(sub).get();
+    s.forEach(d => batch.delete(d.ref));
+  }
+  batch.delete(db.collection('campuses').doc(id));
+  await batch.commit(); await showDashboard();
 }
 
-async function openClass(classId){
-  show('view-class');
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('[data-tab="students"]').classList.add('active');
-  ['students','groups','voting','qrcodes'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!=='students'));
-  await loadClass(classId);
+// ——— MOVE A CAMPUS BETWEEN SEMESTERS ———
+function openMoveCampus(id){
+  const c = allCampuses.find(x => x.id === id); if(!c) return;
+  moveClsId = id;
+  document.getElementById('move-cls-name').value = c.name;
+  const sel = document.getElementById('move-sem-sel');
+  sel.innerHTML = semesters.map(s =>
+    `<option value="${s.id}" ${s.id===(c.semesterId||null)?'selected':''}>${esc(s.name)}</option>`).join('');
+  if(!semesters.length) sel.innerHTML = '<option value="">No semesters exist yet</option>';
+  hideEl('mmove-err'); openModal('modal-move');
 }
-async function loadClass(classId){
-  const[clsDoc,stuSnap,grpSnap]=await Promise.all([db.collection('classes').doc(classId).get(),db.collection('classes').doc(classId).collection('students').get(),db.collection('classes').doc(classId).collection('groups').get()]);
-  currentClass={id:classId,...clsDoc.data()};
-  students=stuSnap.docs.map(d=>({id:d.id,...d.data()}));
-  groups=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
-  renderClassHeader();renderStudents();renderGroups();renderVotingTab();renderQRTab();
+async function saveMoveCampus(){
+  const semId = document.getElementById('move-sem-sel').value;
+  if(!semId){ showEl('mmove-err','Create a semester first, then move this campus into it.'); return; }
+  const sem = semesters.find(s => s.id === semId);
+  const btn = document.getElementById('btn-save-move'); btn.disabled = true;
+  try{
+    await db.collection('campuses').doc(moveClsId).update({semesterId:semId, semesterName:sem?sem.name:''});
+    closeModal('modal-move');
+    await showDashboard();
+  } catch(e){ showEl('mmove-err', e.message); }
+  btn.disabled = false;
+}
+
+// ——— OPEN / LOAD CAMPUS ———
+async function openCampus(campusId){
+  show('view-campus');
+  // keep the breadcrumb correct even if a campus is opened straight after creation
+  const meta = allCampuses.find(x => x.id === campusId);
+  if(meta && !currentSemester) currentSemester = semesters.find(s => s.id === meta.semesterId) || UNASSIGNED;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-tab="students"]').classList.add('active');
+  ['students','groups','voting','qrcodes'].forEach(t => document.getElementById('tab-'+t).classList.toggle('hidden', t!=='students'));
+  await loadCampus(campusId);
+}
+async function loadCampus(campusId){
+  let clsDoc, stuSnap, grpSnap;
+  try {
+    [clsDoc, stuSnap, grpSnap] = await Promise.all([
+      db.collection('campuses').doc(campusId).get(),
+      db.collection('campuses').doc(campusId).collection('students').get(),
+      db.collection('campuses').doc(campusId).collection('groups').get()
+    ]);
+  } catch(e){ loadError('stu-msg', e, 'this campus'); return; }
+  currentClass = {id:campusId,...clsDoc.data()};
+  students = stuSnap.docs.map(d => ({id:d.id,...d.data()}));
+  groups = grpSnap.docs.map(d => ({id:d.id,...d.data()}));
+  try { await backfillLoginIds(campusId); } catch(e){ console.warn('login-id backfill skipped:', e.message); }
+  renderClassHeader(); renderStudents(); renderGroups(); renderVotingTab(); renderQRTab();
 }
 function renderClassHeader(){
-  const c=currentClass;
-  document.getElementById('cls-name').textContent=c.name;
-  document.getElementById('cls-desc').textContent=c.description||'';
-  const vb=document.getElementById('cls-vbadge');
-  vb.textContent=c.votingOpen?'\u{1F7E2} Voting Open':'\u23F8 Voting Closed';
-  vb.className='badge '+(c.votingOpen?'bgn':'bn');
-  const voted=students.filter(s=>s.hasVoted).length;
-  document.getElementById('cs-s').textContent='\u{1F465} '+students.length+' students';
-  document.getElementById('cs-g').textContent='\u{1F5C2} '+groups.length+' groups';
-  document.getElementById('cs-v').textContent='\u{1F5F3} '+voted+' voted';
+  const c = currentClass;
+  const crumb = document.getElementById('cls-crumb');
+  if(crumb) crumb.textContent = (currentSemester && currentSemester.name)
+    ? currentSemester.name + '  ›  Campus'
+    : (c.semesterName ? c.semesterName + '  ›  Campus' : 'Campus');
+  document.getElementById('cls-name').textContent = c.name;
+  document.getElementById('cls-desc').textContent = c.description || '';
+  const vb = document.getElementById('cls-vbadge');
+  vb.textContent = c.votingOpen ? '🟢 Voting Open' : '⏸ Voting Closed';
+  vb.className = 'badge ' + (c.votingOpen ? 'bgn' : 'bn');
+  const voted = students.filter(s => s.hasVoted).length;
+  document.getElementById('cs-s').textContent = '👥 '+students.length+' students';
+  document.getElementById('cs-g').textContent = '🗂 '+groups.length+' groups';
+  document.getElementById('cs-v').textContent = '🗳 '+voted+' voted';
+  const gl = document.getElementById('grp-campus-label');
+  if(gl) gl.textContent = c.name;
 }
-function switchTab(btn,tab){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  ['students','groups','voting','qrcodes'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
+function switchTab(btn, tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+  ['students','groups','voting','qrcodes'].forEach(t => document.getElementById('tab-'+t).classList.toggle('hidden', t!==tab));
+}
+
+// ——— STUDENTS ———
+// Student IDs are the login credential, so they are compared case-insensitively
+// everywhere. `studentIdLower` is the normalised copy that vote.html queries.
+function normId(v){ return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,''); }
+
+function idIssues(){
+  const missing=[], dupes=[], seen={};
+  students.forEach(s => {
+    const k = normId(s.studentId);
+    if(!k){ missing.push(s); return; }
+    if(seen[k]) dupes.push(s); else seen[k] = s;
+  });
+  return {missing, dupes};
 }
 
 function renderStudents(){
-  const q=(document.getElementById('stu-search').value||'').toLowerCase();
-  const gmap={};groups.forEach(g=>gmap[g.id]=g);
-  const f=students.filter(s=>s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||(s.studentId||'').includes(q));
-  const voted=students.filter(s=>s.hasVoted).length;const has=students.length>0;
-  document.getElementById('stu-empty').classList.toggle('hidden',has);
-  document.getElementById('stu-table-wrap').classList.toggle('hidden',!has);
-  document.getElementById('btn-copyall').classList.toggle('hidden',!has);
-  document.getElementById('btn-export').classList.toggle('hidden',!has);
-  if(!has)return;
-  document.getElementById('stu-count').textContent=f.length+' of '+students.length+' students';
-  document.getElementById('stu-voted').textContent=voted+' voted';
-  document.getElementById('stu-tbody').innerHTML=f.map(s=>{
-    const g=s.groupId&&gmap[s.groupId];
-    return '<tr><td style="font-weight:600">'+esc(s.name)+'</td><td class="mono mu" style="font-size:.81rem">'+(s.studentId||'&mdash;')+'</td><td style="font-size:.81rem">'+(s.email||'&mdash;')+'</td><td><span class="badge ba mono" style="letter-spacing:.09em;cursor:pointer" id="pin-'+s.id+'" onclick="copyPin(\''+s.id+'\',\''+s.pin+'\')">'+s.pin+'</span></td><td>'+(g?'<span class="badge bn">'+esc(g.name)+'</span>':'<span class="mu">&mdash;</span>')+'</td><td>'+(s.hasVoted?'<span class="badge bgn">\u2705 Voted</span>':'<span class="badge bn">Pending</span>')+'</td><td><button class="btn bd bsm" onclick="deleteStu(\''+s.id+'\',\''+esc(s.name)+'\')">\u{1F5D1}</button></td></tr>';
+  const q = (document.getElementById('stu-search').value||'').toLowerCase();
+  const gmap = {}; groups.forEach(g => gmap[g.id]=g);
+  const f = students.filter(s => s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||normId(s.studentId).includes(q));
+  const voted = students.filter(s => s.hasVoted).length;
+  const has = students.length > 0;
+  document.getElementById('stu-empty').classList.toggle('hidden', has);
+  document.getElementById('stu-table-wrap').classList.toggle('hidden', !has);
+  document.getElementById('btn-export').classList.toggle('hidden', !has);
+
+  // Warn loudly: a missing or duplicated ID means that student cannot sign in.
+  const warnBox = document.getElementById('stu-idwarn');
+  const {missing, dupes} = idIssues();
+  if(has && (missing.length || dupes.length)){
+    const bits = [];
+    if(missing.length) bits.push('<strong>'+missing.length+'</strong> student'+(missing.length>1?'s have':' has')+' no Student ID');
+    if(dupes.length)   bits.push('<strong>'+dupes.length+'</strong> duplicate Student ID'+(dupes.length>1?'s':''));
+    warnBox.innerHTML = '<div class="alert ae" style="font-size:.82rem">⚠️ '+bits.join(' and ')+
+      '. Those students will not be able to sign in — use ✏️ to fix their ID.</div>';
+  } else warnBox.innerHTML = '';
+
+  if(!has) return;
+  document.getElementById('stu-count').textContent = f.length+' of '+students.length+' students';
+  document.getElementById('stu-voted').textContent = voted+' voted';
+
+  const dupeIds = new Set(dupes.map(s=>s.id));
+  document.getElementById('stu-tbody').innerHTML = f.map(s => {
+    const g = s.groupId && gmap[s.groupId];
+    const idCell = !normId(s.studentId)
+      ? '<span class="badge brd">no ID — can\'t log in</span>'
+      : `<span class="badge ${dupeIds.has(s.id)?'brd':'ba'} mono" style="letter-spacing:.06em;cursor:pointer" id="sid-${s.id}" onclick="copyId('${s.id}')" title="Click to copy">${esc(s.studentId)}</span>`;
+    return `<tr>
+      <td style="font-weight:600">${esc(s.name)}</td>
+      <td>${idCell}</td>
+      <td style="font-size:.81rem">${esc(s.email)||'&mdash;'}</td>
+      <td>${g ? '<span class="badge bn">'+esc(g.name)+'</span>' : '<span class="mu">&mdash;</span>'}</td>
+      <td>${s.hasVoted ? '<span class="badge bgn">✅ Voted</span>' : '<span class="badge bn">Pending</span>'}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn bs bsm" onclick="openEditStudent('${s.id}')" title="Edit">✏️</button>
+        <button class="btn bd bsm" onclick="deleteStu('${s.id}','${esc(s.name)}')" title="Remove">🗑</button>
+      </td>
+    </tr>`;
   }).join('');
 }
-function copyPin(id,pin){navigator.clipboard.writeText(pin);const e=document.getElementById('pin-'+id);const o=e.textContent;e.textContent='\u2705';setTimeout(()=>e.textContent=o,1400);}
-function copyAllPins(){const rows=students.map(s=>s.name+'\t'+(s.studentId||'')+'\t'+(s.email||'')+'\t'+s.pin);navigator.clipboard.writeText('Name\tID\tEmail\tPIN\n'+rows.join('\n'));}
-function exportCSV(){const rows=['Name,StudentID,Email,PIN'];students.forEach(s=>rows.push('"'+s.name+'","'+(s.studentId||'')+'","'+(s.email||'')+'","'+s.pin+'"'));const url=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=url;a.download='students-pins.csv';a.click();URL.revokeObjectURL(url);}
+function copyId(id){
+  const s = students.find(x=>x.id===id); if(!s) return;
+  navigator.clipboard.writeText(s.studentId||'');
+  const e=document.getElementById('sid-'+id); const o=e.textContent; e.textContent='✅ copied'; setTimeout(()=>e.textContent=o,1300);
+}
+function exportCSV(){
+  const gmap={}; groups.forEach(g=>gmap[g.id]=g);
+  const q = v => '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows = ['Name,StudentID,Email,Group,Voted'];
+  students.forEach(s => rows.push([s.name,s.studentId||'',s.email||'',(s.groupId&&gmap[s.groupId]?gmap[s.groupId].name:''),s.hasVoted?'yes':'no'].map(q).join(',')));
+  const url = URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  const a = document.createElement('a'); a.href=url; a.download='students.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+// ——— ADD / EDIT A SINGLE STUDENT ———
+let editStuId = null;
+function openAddStudent(){
+  editStuId = null;
+  document.getElementById('stu-modal-title').textContent = 'Add Student';
+  document.getElementById('btn-save-stu').textContent = 'Add Student';
+  ['stu-name-inp','stu-id-inp','stu-email-inp'].forEach(i=>document.getElementById(i).value='');
+  hideEl('mstu-err'); openModal('modal-student');
+}
+function openEditStudent(id){
+  const s = students.find(x=>x.id===id); if(!s) return;
+  editStuId = id;
+  document.getElementById('stu-modal-title').textContent = 'Edit Student';
+  document.getElementById('btn-save-stu').textContent = 'Save Changes';
+  document.getElementById('stu-name-inp').value  = s.name || '';
+  document.getElementById('stu-id-inp').value    = s.studentId || '';
+  document.getElementById('stu-email-inp').value = s.email || '';
+  hideEl('mstu-err'); openModal('modal-student');
+}
+async function saveStudent(){
+  const name = document.getElementById('stu-name-inp').value.trim();
+  const sid  = document.getElementById('stu-id-inp').value.trim();
+  const mail = document.getElementById('stu-email-inp').value.trim();
+  if(!name){ showEl('mstu-err','Name is required.'); return; }
+  if(!sid){  showEl('mstu-err','Student ID is required — it is how the student signs in.'); return; }
+  const key = normId(sid);
+  const clash = students.find(s => s.id!==editStuId && normId(s.studentId)===key);
+  if(clash){ showEl('mstu-err','"'+sid+'" is already used by '+clash.name+'. Student IDs must be unique.'); return; }
+
+  const btn = document.getElementById('btn-save-stu'); btn.disabled=true;
+  try{
+    const col = db.collection('campuses').doc(currentClass.id).collection('students');
+    if(editStuId){
+      await col.doc(editStuId).update({name, studentId:sid, studentIdLower:key, email:mail});
+    } else {
+      await col.add({name, studentId:sid, studentIdLower:key, email:mail, campusId:currentClass.id,
+        hasVoted:false, groupId:null, createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    closeModal('modal-student'); await loadCampus(currentClass.id);
+  } catch(e){ showEl('mstu-err', e.message); }
+  btn.disabled=false;
+}
 async function handleCSV(input){
-  const file=input.files[0];if(!file)return;
-  const msg=document.getElementById('stu-msg');msg.innerHTML='<div class="alert ai">\u23F3 Importing...</div>';
-  try{const rows=await parseCSV(file);await importStudents(rows);msg.innerHTML='<div class="alert ao">\u2705 Imported '+rows.length+' students with PINs generated.</div>';await loadClass(currentClass.id);setTimeout(()=>msg.innerHTML='',4000);}
-  catch(e){msg.innerHTML='<div class="alert ae">\u26A0\uFE0F '+e.message+'</div>';}
+  const file = input.files[0]; if(!file) return;
+  const msg = document.getElementById('stu-msg');
+  msg.innerHTML = '<div class="alert ai">⏳ Importing...</div>';
+  try{
+    const rows = await parseCSV(file);
+    // Filter by campus column if present: keep rows that match this campus name or have no campus
+    const campusName = (currentClass.name||'').toLowerCase().trim();
+    let candidates = rows.filter(r => {
+      if(!r.campus || r.campus==='' || r.campus==='*') return true;
+      return r.campus.toLowerCase().trim() === campusName;
+    });
+    const wrongCampus = rows.length - candidates.length;
+
+    // Student ID is the login credential, so rows without one are useless.
+    const noId = candidates.filter(r => !normId(r.studentId)).length;
+    candidates = candidates.filter(r => normId(r.studentId));
+
+    // Skip IDs already on the roster, and de-duplicate within the file itself.
+    const existing = new Set(students.map(s => normId(s.studentId)).filter(Boolean));
+    const seen = new Set();
+    const toImport = candidates.filter(r => {
+      const k = normId(r.studentId);
+      if(existing.has(k) || seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+    const dupes = candidates.length - toImport.length;
+
+    if(toImport.length) await importStudents(toImport);
+
+    const notes = [];
+    if(wrongCampus) notes.push(wrongCampus+' for another campus');
+    if(noId)        notes.push(noId+' with no Student ID');
+    if(dupes)       notes.push(dupes+' already on the roster');
+    let m = (toImport.length ? '✅ Imported '+toImport.length+' student'+(toImport.length>1?'s':'')+'.'
+                             : 'ℹ️ Nothing new to import.');
+    if(notes.length) m += ' Skipped: '+notes.join(', ')+'.';
+    msg.innerHTML = '<div class="alert '+(toImport.length?'ao':'ai')+'">'+m+'</div>';
+    await loadCampus(currentClass.id);
+    setTimeout(()=>msg.innerHTML='',5000);
+  } catch(e){ msg.innerHTML='<div class="alert ae">⚠️ '+e.message+'</div>'; }
   input.value='';
 }
-function parseCSV(file){return new Promise((res,rej)=>{Papa.parse(file,{header:true,skipEmptyLines:true,transformHeader:h=>h.trim().toLowerCase(),complete:r=>{const m=r.data.map(row=>({name:(row.name||row.full_name||row.fullname||'').trim(),studentId:(row.id||row.student_id||row.studentid||row.student_number||'').trim(),email:(row.email||row.email_address||'').trim()})).filter(r=>r.name);m.length?res(m):rej(new Error('No valid rows. CSV needs a "name" column.'));},error:e=>rej(e)});});}
-function genPin(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let p='';for(let i=0;i<6;i++)p+=c[Math.floor(Math.random()*c.length)];return p;}
-async function importStudents(rows){const batch=db.batch();rows.forEach(s=>{const ref=db.collection('classes').doc(currentClass.id).collection('students').doc();batch.set(ref,{name:s.name,studentId:s.studentId,email:s.email,pin:genPin(),hasVoted:false,groupId:null,createdAt:firebase.firestore.FieldValue.serverTimestamp()});});await batch.commit();}
-async function deleteStu(id,name){if(!confirm('Remove '+name+'?'))return;await db.collection('classes').doc(currentClass.id).collection('students').doc(id).delete();await loadClass(currentClass.id);}
+function parseCSV(file){
+  return new Promise((res,rej) => {
+    Papa.parse(file, {
+      header:true, skipEmptyLines:true,
+      transformHeader: h => h.trim().toLowerCase(),
+      complete: r => {
+        const m = r.data.map(row => ({
+          name: (row.name||row.full_name||row.fullname||'').trim(),
+          studentId: (row.id||row.student_id||row.studentid||row.student_number||'').trim(),
+          email: (row.email||row.email_address||'').trim(),
+          campus: (row.campus||row.campus_name||'').trim()
+        })).filter(r => r.name);
+        m.length ? res(m) : rej(new Error('No valid rows. CSV needs a "name" column.'));
+      },
+      error: e => rej(e)
+    });
+  });
+}
+async function importStudents(rows){
+  const batch = db.batch();
+  rows.forEach(s => {
+    const ref = db.collection('campuses').doc(currentClass.id).collection('students').doc();
+    batch.set(ref,{name:s.name, studentId:s.studentId, studentIdLower:normId(s.studentId),
+      email:s.email, campusId:currentClass.id,
+      hasVoted:false, groupId:null, createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  });
+  await batch.commit();
+}
 
+// Older rosters were imported before `studentIdLower` existed. Fill it in
+// silently the first time an admin opens the campus so ID login just works.
+async function backfillLoginIds(campusId){
+  const stale = students.filter(s => normId(s.studentId) && s.studentIdLower !== normId(s.studentId));
+  if(!stale.length) return false;
+  const batch = db.batch();
+  stale.forEach(s => batch.update(
+    db.collection('campuses').doc(campusId).collection('students').doc(s.id),
+    {studentIdLower: normId(s.studentId)}
+  ));
+  await batch.commit();
+  stale.forEach(s => s.studentIdLower = normId(s.studentId));
+  return true;
+}
+async function deleteStu(id, name){
+  if(!confirm('Remove '+name+'?')) return;
+  await db.collection('campuses').doc(currentClass.id).collection('students').doc(id).delete();
+  await loadCampus(currentClass.id);
+}
+
+// ——— GROUPS ———
 function renderGroups(){
-  const has=groups.length>0;
-  document.getElementById('grp-empty').classList.toggle('hidden',has);
-  document.getElementById('grp-grid').classList.toggle('hidden',!has);
-  const smap={};students.forEach(s=>smap[s.id]=s);
-  document.getElementById('grp-grid').innerHTML=groups.map(g=>{
-    const mems=(g.memberIds||[]).map(id=>smap[id]).filter(Boolean);
-    return '<div class="card fu"><div class="between" style="margin-bottom:10px"><div><div class="flex" style="margin-bottom:3px"><span style="font-size:1.1rem">\u{1F5C2}</span><h3 style="font-size:.95rem">'+esc(g.name)+'</h3></div><span class="badge ba" style="font-size:.71rem">\u{1F4CB} '+esc(g.projectName)+'</span></div><div class="flex"><button class="btn bs bsm" onclick="openEditGroup(\''+g.id+'\')">\u270F\uFE0F</button><button class="btn bd bsm" onclick="deleteGroup(\''+g.id+'\',\''+esc(g.name)+'\')">\u{1F5D1}</button></div></div><p class="fl" style="margin-bottom:5px">Members ('+mems.length+')</p>'+(mems.length?'<div style="display:flex;flex-wrap:wrap;gap:4px">'+mems.map(s=>'<span class="badge bn">'+esc(s.name)+'</span>').join('')+'</div>':'<p class="mu" style="font-size:.82rem">No members assigned.</p>')+'</div>';
+  const has = groups.length>0;
+  document.getElementById('grp-empty').classList.toggle('hidden', has);
+  document.getElementById('grp-grid').classList.toggle('hidden', !has);
+  const smap={}; students.forEach(s => smap[s.id]=s);
+  document.getElementById('grp-grid').innerHTML = groups.map(g => {
+    const mems = (g.memberIds||[]).map(id=>smap[id]).filter(Boolean);
+    return `<div class="card fu">
+      <div class="between" style="margin-bottom:10px">
+        <div>
+          <div class="flex" style="margin-bottom:3px"><span style="font-size:1.1rem">🗂</span><h3 style="font-size:.95rem">${esc(g.name)}</h3></div>
+          <span class="badge ba" style="font-size:.71rem">📋 ${esc(g.projectName)}</span>
+        </div>
+        <div class="flex">
+          <button class="btn bs bsm" onclick="openEditGroup('${g.id}')">✏️</button>
+          <button class="btn bd bsm" onclick="deleteGroup('${g.id}','${esc(g.name)}')">🗑</button>
+        </div>
+      </div>
+      <p class="fl" style="margin-bottom:5px">Members (${mems.length})</p>
+      ${mems.length ? '<div style="display:flex;flex-wrap:wrap;gap:4px">'+mems.map(s=>'<span class="badge bn">'+esc(s.name)+'</span>').join('')+'</div>' : '<p class="mu" style="font-size:.82rem">No members assigned.</p>'}
+    </div>`;
   }).join('');
 }
-function openCreateGroup(){editGroupId=null;selectedMemberIds=new Set();document.getElementById('grp-name-inp').value='';document.getElementById('grp-proj-inp').value='';document.getElementById('grp-stu-srch').value='';document.getElementById('grp-modal-title').textContent='Create New Group';document.getElementById('btn-save-grp').textContent='Create Group';hideEl('mgrp-err');renderMemberList();openModal('modal-group');}
-function openEditGroup(id){const g=groups.find(x=>x.id===id);if(!g)return;editGroupId=id;selectedMemberIds=new Set(g.memberIds||[]);document.getElementById('grp-name-inp').value=g.name;document.getElementById('grp-proj-inp').value=g.projectName||'';document.getElementById('grp-stu-srch').value='';document.getElementById('grp-modal-title').textContent='Edit Group';document.getElementById('btn-save-grp').textContent='Save Changes';hideEl('mgrp-err');renderMemberList();openModal('modal-group');}
-function renderMemberList(){
-  const q=(document.getElementById('grp-stu-srch').value||'').toLowerCase();
-  const avail=students.filter(s=>!s.groupId||s.groupId===editGroupId||selectedMemberIds.has(s.id)).filter(s=>s.name.toLowerCase().includes(q)||(s.studentId||'').includes(q));
-  document.getElementById('grp-sel-cnt').textContent=selectedMemberIds.size;
-  document.getElementById('grp-member-list').innerHTML=avail.map(s=>{const ck=selectedMemberIds.has(s.id);return '<div class="ck-item'+(ck?' checked':'')+'" onclick="toggleMember(\''+s.id+'\',this)"><input type="checkbox" '+(ck?'checked':'')+' onclick="event.stopPropagation();toggleMember(\''+s.id+'\',this.closest(\'.ck-item\'))"/><span style="flex:1;font-size:.86rem">'+esc(s.name)+'</span><span class="mu" style="font-size:.74rem">'+(s.studentId||s.email||'')+'</span></div>';}).join('');
+function openCreateGroup(){
+  editGroupId=null; selectedMemberIds=new Set();
+  document.getElementById('grp-name-inp').value='';
+  document.getElementById('grp-proj-inp').value='';
+  document.getElementById('grp-stu-srch').value='';
+  document.getElementById('grp-modal-title').textContent='Create New Group';
+  document.getElementById('btn-save-grp').textContent='Create Group';
+  hideEl('mgrp-err'); renderMemberList(); openModal('modal-group');
 }
-function toggleMember(id,el){selectedMemberIds.has(id)?selectedMemberIds.delete(id):selectedMemberIds.add(id);el.classList.toggle('checked',selectedMemberIds.has(id));el.querySelector('input').checked=selectedMemberIds.has(id);document.getElementById('grp-sel-cnt').textContent=selectedMemberIds.size;}
+function openEditGroup(id){
+  const g=groups.find(x=>x.id===id); if(!g) return;
+  editGroupId=id; selectedMemberIds=new Set(g.memberIds||[]);
+  document.getElementById('grp-name-inp').value=g.name;
+  document.getElementById('grp-proj-inp').value=g.projectName||'';
+  document.getElementById('grp-stu-srch').value='';
+  document.getElementById('grp-modal-title').textContent='Edit Group';
+  document.getElementById('btn-save-grp').textContent='Save Changes';
+  hideEl('mgrp-err'); renderMemberList(); openModal('modal-group');
+}
+function renderMemberList(){
+  const q = (document.getElementById('grp-stu-srch').value||'').toLowerCase();
+  const avail = students
+    .filter(s => !s.groupId || s.groupId===editGroupId || selectedMemberIds.has(s.id))
+    .filter(s => s.name.toLowerCase().includes(q)||(s.studentId||'').includes(q));
+  document.getElementById('grp-sel-cnt').textContent = selectedMemberIds.size;
+  document.getElementById('grp-member-list').innerHTML = avail.map(s => {
+    const ck = selectedMemberIds.has(s.id);
+    return `<div class="ck-item${ck?' checked':''}" onclick="toggleMember('${s.id}',this)">
+      <input type="checkbox" ${ck?'checked':''} onclick="event.stopPropagation();toggleMember('${s.id}',this.closest('.ck-item'))"/>
+      <span style="flex:1;font-size:.86rem">${esc(s.name)}</span>
+      <span class="mu" style="font-size:.74rem">${s.studentId||s.email||''}</span>
+    </div>`;
+  }).join('');
+}
+function toggleMember(id, el){
+  selectedMemberIds.has(id) ? selectedMemberIds.delete(id) : selectedMemberIds.add(id);
+  el.classList.toggle('checked', selectedMemberIds.has(id));
+  el.querySelector('input').checked = selectedMemberIds.has(id);
+  document.getElementById('grp-sel-cnt').textContent = selectedMemberIds.size;
+}
 async function saveGroup(){
-  const name=document.getElementById('grp-name-inp').value.trim(),proj=document.getElementById('grp-proj-inp').value.trim();
-  if(!name||!proj){showEl('mgrp-err','Group name and project name are required.');return;}
-  const btn=document.getElementById('btn-save-grp');btn.disabled=true;
+  const name=document.getElementById('grp-name-inp').value.trim(), proj=document.getElementById('grp-proj-inp').value.trim();
+  if(!name||!proj){ showEl('mgrp-err','Group name and project name are required.'); return; }
+  const btn=document.getElementById('btn-save-grp'); btn.disabled=true;
   const mids=[...selectedMemberIds];
   try{
     const batch=db.batch();
-    if(editGroupId){const oldG=groups.find(g=>g.id===editGroupId);const oldMids=oldG?.memberIds||[];const removed=oldMids.filter(id=>!mids.includes(id));const added=mids.filter(id=>!oldMids.includes(id));batch.update(db.collection('classes').doc(currentClass.id).collection('groups').doc(editGroupId),{name,projectName:proj,memberIds:mids});removed.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:null}));added.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:editGroupId}));}
-    else{const ref=db.collection('classes').doc(currentClass.id).collection('groups').doc();batch.set(ref,{name,projectName:proj,memberIds:mids,createdAt:firebase.firestore.FieldValue.serverTimestamp()});mids.forEach(id=>batch.update(db.collection('classes').doc(currentClass.id).collection('students').doc(id),{groupId:ref.id}));}
-    await batch.commit();closeModal('modal-group');await loadClass(currentClass.id);
-  }catch(e){showEl('mgrp-err',e.message);}
+    if(editGroupId){
+      const oldG=groups.find(g=>g.id===editGroupId); const oldMids=oldG?.memberIds||[];
+      const removed=oldMids.filter(id=>!mids.includes(id)); const added=mids.filter(id=>!oldMids.includes(id));
+      batch.update(db.collection('campuses').doc(currentClass.id).collection('groups').doc(editGroupId),{name,projectName:proj,memberIds:mids});
+      removed.forEach(id=>batch.update(db.collection('campuses').doc(currentClass.id).collection('students').doc(id),{groupId:null}));
+      added.forEach(id=>batch.update(db.collection('campuses').doc(currentClass.id).collection('students').doc(id),{groupId:editGroupId}));
+    } else {
+      const ref=db.collection('campuses').doc(currentClass.id).collection('groups').doc();
+      batch.set(ref,{name,projectName:proj,memberIds:mids,campusId:currentClass.id,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      mids.forEach(id=>batch.update(db.collection('campuses').doc(currentClass.id).collection('students').doc(id),{groupId:ref.id}));
+    }
+    await batch.commit(); closeModal('modal-group'); await loadCampus(currentClass.id);
+  } catch(e){ showEl('mgrp-err',e.message); }
   btn.disabled=false;
 }
-async function deleteGroup(id,name){
-  if(!confirm('Delete group "'+name+'"?'))return;
+async function deleteGroup(id, name){
+  if(!confirm('Delete group "'+name+'"?')) return;
   const batch=db.batch();
-  const s=await db.collection('classes').doc(currentClass.id).collection('students').where('groupId','==',id).get();
+  const s=await db.collection('campuses').doc(currentClass.id).collection('students').where('groupId','==',id).get();
   s.forEach(d=>batch.update(d.ref,{groupId:null}));
-  batch.delete(db.collection('classes').doc(currentClass.id).collection('groups').doc(id));
-  await batch.commit();await loadClass(currentClass.id);
+  batch.delete(db.collection('campuses').doc(currentClass.id).collection('groups').doc(id));
+  await batch.commit(); await loadCampus(currentClass.id);
 }
 
+// ——— VOTING TAB ———
 function renderVotingTab(){
   const c=currentClass;
   const voted=students.filter(s=>s.hasVoted).length;
   const pct=students.length?Math.round(voted/students.length*100):0;
   const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
-  const sLink=base+'?class='+c.id+'&mode=student';
-  const gLink=base+'?class='+c.id+'&mode=guest';
-  const grpItems=groups.map((g,i)=>'<div style="display:flex;align-items:center;gap:11px;padding:9px 12px;background:var(--s2);border-radius:var(--rS);border:1px solid var(--bdr)"><span style="width:27px;height:27px;border-radius:5px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-family:var(--fM);color:var(--a2);flex-shrink:0">'+String(i+1).padStart(2,'0')+'</span><div style="flex:1"><p style="font-size:.86rem;font-weight:600">'+esc(g.name)+'</p><p class="mu" style="font-size:.78rem">\u{1F4CB} '+esc(g.projectName)+'</p></div><span class="badge bn" style="font-size:.71rem">\u{1F465} '+(g.memberIds||[]).length+'</span></div>').join('');
+  const sLink=base+'?campus='+c.id+'&mode=student';
+  const tLink=base+'?campus='+c.id+'&mode=guest';
+  const grpItems=groups.map((g,i)=>`
+    <div style="display:flex;align-items:center;gap:11px;padding:9px 12px;background:var(--s2);border-radius:var(--rS);border:1px solid var(--bdr)">
+      <span style="width:27px;height:27px;border-radius:5px;background:var(--ag);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-family:var(--fM);color:var(--a2);flex-shrink:0">${String(i+1).padStart(2,'0')}</span>
+      <div style="flex:1"><p style="font-size:.86rem;font-weight:600">${esc(g.name)}</p><p class="mu" style="font-size:.78rem">📋 ${esc(g.projectName)}</p></div>
+      <span class="badge bn" style="font-size:.71rem">👥 ${(g.memberIds||[]).length}</span>
+    </div>`).join('');
+  const guestCode = c.guestCode || c.teacherCode || '';
+  const maxVotes = parseInt(c.maxVotesPerStudent,10) > 0 ? parseInt(c.maxVotesPerStudent,10) : 3;
+  const noId = students.filter(s => !normId(s.studentId)).length;
   document.getElementById('voting-content').innerHTML=`
   <div style="display:flex;flex-direction:column;gap:15px">
     <div class="card" style="border-color:${c.votingOpen?'var(--gn)':'var(--bdr)'}">
       <div class="between">
-        <div><h3 style="margin-bottom:4px">Voting Session</h3><p class="mu" style="font-size:.82rem">${c.votingOpen?'Open &mdash; students and guests can rate all projects.':'Closed &mdash; open it when the poster session begins.'}</p></div>
+        <div>
+          <h3 style="margin-bottom:4px">Voting Session</h3>
+          <p class="mu" style="font-size:.82rem">${c.votingOpen?'Open &mdash; students and teachers can rate projects.':'Closed &mdash; open it when the poster session begins.'}</p>
+        </div>
         <button class="btn ${c.votingOpen?'bd':'bgold'}" onclick="toggleVoting()" id="btn-tvote" style="min-width:140px;justify-content:center" ${groups.length===0?'disabled':''}>
-          ${c.votingOpen?'&#9646; Close Voting':'&#9654; Open Voting'}
+          ${c.votingOpen?'⏸ Close Voting':'▶ Open Voting'}
         </button>
       </div>
-      ${groups.length===0?'<div class="alert ae" style="margin-top:11px">&#9888;&#65039; Create at least one group before opening voting.</div>':''}
+      ${groups.length===0?'<div class="alert ae" style="margin-top:11px">⚠️ Create at least one group before opening voting.</div>':''}
     </div>
     <div class="card">
-      <h3 style="margin-bottom:4px">&#127760; Guest Code (Anonymous Voters)</h3>
-      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Set a secret code to share with anonymous visitors (judges, attendees). Leave blank to disable guest voting.</p>
+      <div class="flex" style="margin-bottom:6px">
+        <span style="font-size:1.15rem">🎓</span>
+        <h3>How Students Sign In</h3>
+        <span class="badge ba">Student ID</span>
+      </div>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Students log in with the Student ID on their roster entry (e.g. <span class="mono">CIHE2026</span>). Upper or lower case both work &mdash; no PINs to hand out.</p>
+      ${noId ? '<div class="alert ae" style="font-size:.8rem;margin-bottom:11px">⚠️ '+noId+' student'+(noId>1?'s have':' has')+' no Student ID and cannot sign in. Fix this in the Students tab.</div>' : ''}
+      <p class="fl" style="margin-bottom:5px">Maximum projects one student may rate</p>
       <div style="display:flex;gap:9px;align-items:center">
-        <input id="guest-code-inp" value="${esc(c.guestCode||'')}" placeholder="e.g. CONF2025" style="max-width:280px"/>
-        <button class="btn bs bsm" onclick="saveGuestCode()">Save</button>
-        <span id="gc-ok" class="badge bgn hidden">&#10003; Saved</span>
+        <input id="maxvotes-inp" type="number" min="1" max="20" value="${maxVotes}" style="max-width:110px"/>
+        <button class="btn bs bsm" onclick="saveMaxVotes()">Save</button>
+        <span id="mv-ok" class="badge bgn hidden">✓ Saved</span>
+        <span class="mu" style="font-size:.78rem">Default is 3.</span>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(155,89,182,.4)">
+      <div class="flex" style="margin-bottom:6px">
+        <span style="font-size:1.15rem">🌐</span>
+        <h3>Guest Access Code</h3>
+        <span class="badge btcb">For guests / judges only</span>
+      </div>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Share this code with guests, teachers or judges so they can vote anonymously on all projects. They are not limited to ${maxVotes}. Leave blank to disable guest voting.</p>
+      <div style="display:flex;gap:9px;align-items:center">
+        <input id="teacher-code-inp" value="${esc(guestCode)}" placeholder="e.g. GUEST2026" style="max-width:280px"/>
+        <button class="btn bs bsm" onclick="saveTeacherCode()">Save</button>
+        <span id="tc-ok" class="badge bgn hidden">✓ Saved</span>
       </div>
     </div>
     <div class="card">
       <h3 style="margin-bottom:11px">Voting Links</h3>
-      <p class="fl" style="margin-bottom:5px">&#127891; Student Link (needs PIN &mdash; can rate all groups except own)</p>
-      <div class="copybox" style="margin-bottom:13px"><code>${sLink}</code><button class="btn bs bsm" onclick="cpText('${sLink}',this)">&#128203; Copy</button></div>
-      <p class="fl" style="margin-bottom:5px">&#127760; Guest Link (needs Guest Code &mdash; can rate all groups)</p>
-      <div class="copybox"><code>${gLink}</code><button class="btn bs bsm" onclick="cpText('${gLink}',this)">&#128203; Copy</button></div>
+      <p class="fl" style="margin-bottom:5px">🎓 Student Link &mdash; Student ID sign-in, max ${maxVotes} projects, own group excluded</p>
+      <div class="copybox" style="margin-bottom:13px"><code>${sLink}</code><button class="btn bs bsm" onclick="cpText('${sLink}',this)">📋 Copy</button></div>
+      <p class="fl" style="margin-bottom:5px">🌐 Guest Link &mdash; requires Guest Code, can rate all projects</p>
+      <div class="copybox" style="border-color:rgba(155,89,182,.4)"><code style="color:var(--t2)">${tLink}</code><button class="btn bs bsm" onclick="cpText('${tLink}',this)">📋 Copy</button></div>
       <p class="mu" style="font-size:.75rem;margin-top:8px">QR codes for each project are in the <strong>QR Codes</strong> tab.</p>
     </div>
     <div class="card">
@@ -477,139 +1172,375 @@ function renderVotingTab(){
     </div>
     <div class="card" style="border-color:rgba(255,92,114,.3)">
       <h3 style="margin-bottom:4px">Danger Zone</h3>
-      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Reset all votes and allow voting again. Cannot be undone.</p>
-      <button class="btn bd" onclick="resetVotes()">&#128260; Reset All Votes</button>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Reset all votes for this campus and allow voting again. Cannot be undone.</p>
+      <button class="btn bd" onclick="resetVotes()">🔄 Reset All Votes</button>
     </div>
   </div>`;
 }
 
-async function saveGuestCode(){
-  const code=document.getElementById('guest-code-inp').value.trim();
-  await db.collection('classes').doc(currentClass.id).update({guestCode:code});
-  currentClass.guestCode=code;
-  const ok=document.getElementById('gc-ok');ok.classList.remove('hidden');setTimeout(()=>ok.classList.add('hidden'),2000);
+async function saveTeacherCode(){
+  const code=document.getElementById('teacher-code-inp').value.trim();
+  // both fields are written so old and new voting pages stay compatible
+  await db.collection('campuses').doc(currentClass.id).update({teacherCode:code,guestCode:code});
+  currentClass.teacherCode=code; currentClass.guestCode=code;
+  const ok=document.getElementById('tc-ok'); ok.classList.remove('hidden'); setTimeout(()=>ok.classList.add('hidden'),2000);
+}
+async function saveMaxVotes(){
+  let n = parseInt(document.getElementById('maxvotes-inp').value,10);
+  if(!(n>0)) n = 3;
+  if(n>20) n = 20;
+  document.getElementById('maxvotes-inp').value = n;
+  await db.collection('campuses').doc(currentClass.id).update({maxVotesPerStudent:n});
+  currentClass.maxVotesPerStudent = n;
+  const ok=document.getElementById('mv-ok'); ok.classList.remove('hidden'); setTimeout(()=>ok.classList.add('hidden'),2000);
 }
 async function toggleVoting(){
   document.getElementById('btn-tvote').disabled=true;
-  await db.collection('classes').doc(currentClass.id).update({votingOpen:!currentClass.votingOpen});
-  await loadClass(currentClass.id);
+  await db.collection('campuses').doc(currentClass.id).update({votingOpen:!currentClass.votingOpen});
+  await loadCampus(currentClass.id);
 }
 async function resetVotes(){
-  if(!confirm('Reset ALL votes? Cannot be undone.'))return;
-  const[vs,ss]=await Promise.all([db.collection('classes').doc(currentClass.id).collection('votes').get(),db.collection('classes').doc(currentClass.id).collection('students').get()]);
+  if(!confirm('Reset ALL votes for this campus? Cannot be undone.')) return;
+  const [vs,ss] = await Promise.all([
+    db.collection('campuses').doc(currentClass.id).collection('votes').get(),
+    db.collection('campuses').doc(currentClass.id).collection('students').get()
+  ]);
   const batch=db.batch();
   vs.forEach(d=>batch.delete(d.ref));
   ss.forEach(d=>batch.update(d.ref,{hasVoted:false}));
-  await batch.commit();await loadClass(currentClass.id);
+  await batch.commit(); await loadCampus(currentClass.id);
 }
-function cpText(t,btn){navigator.clipboard.writeText(t);const o=btn.textContent;btn.textContent='\u2705 Copied!';setTimeout(()=>btn.textContent=o,1800);}
+function cpText(t,btn){ navigator.clipboard.writeText(t); const o=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=o,1800); }
 
+// ——— QR CODES TAB ———
 function renderQRTab(){
   const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
   const c=currentClass;
-  if(!groups.length){document.getElementById('qr-content').innerHTML='<div class="card" style="text-align:center;padding:38px"><div style="font-size:2.2rem;margin-bottom:8px">\u{1F4F1}</div><h3 style="margin-bottom:5px">No groups yet</h3><p class="mu" style="font-size:.86rem">Create groups first, then QR codes appear here.</p></div>';return;}
-  const ovStu=base+'?class='+c.id+'&mode=student';
-  const ovGst=base+'?class='+c.id+'&mode=guest';
+  if(!groups.length){
+    document.getElementById('qr-content').innerHTML='<div class="card" style="text-align:center;padding:38px"><div style="font-size:2.2rem;margin-bottom:8px">📱</div><h3 style="margin-bottom:5px">No groups yet</h3><p class="mu" style="font-size:.86rem">Create groups first, then QR codes appear here.</p></div>';
+    return;
+  }
+  const ovStu=base+'?campus='+c.id+'&mode=student';
+  const ovTch=base+'?campus='+c.id+'&mode=guest';
   let perG='';
   groups.forEach(g=>{
-    const su=base+'?class='+c.id+'&mode=student&group='+g.id;
-    const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
-    perG+='<div class="qr-card"><p style="font-weight:700;font-size:.97rem;margin-bottom:1px">'+esc(g.name)+'</p><p style="color:var(--a2);font-size:.8rem;margin-bottom:11px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px">\u{1F393} Student</p><div id="qg-s-'+g.id+'"></div></div><div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px">\u{1F310} Guest</p><div id="qg-g-'+g.id+'"></div></div></div><button class="btn bs bsm" style="width:100%;justify-content:center;margin-top:9px" onclick="openQRPrint(\''+g.id+'\')">\u{1F5A8} Print This</button></div>';
+    const su=base+'?campus='+c.id+'&mode=student&group='+g.id;
+    const tu=base+'?campus='+c.id+'&mode=guest&group='+g.id;
+    perG+=`<div class="qr-card">
+      <p style="font-weight:700;font-size:.97rem;margin-bottom:1px">${esc(g.name)}</p>
+      <p style="color:var(--a2);font-size:.8rem;margin-bottom:11px">📋 ${esc(g.projectName)}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px">🎓 Student</p><div id="qg-s-${g.id}"></div></div>
+        <div style="text-align:center"><p style="font-size:.73rem;font-weight:600;margin-bottom:3px;color:var(--t2)">🌐 Guest</p><div id="qg-t-${g.id}"></div></div>
+      </div>
+      <button class="btn bs bsm" style="width:100%;justify-content:center;margin-top:9px" onclick="openQRPrint('${g.id}')">🖨 Print This</button>
+    </div>`;
   });
   document.getElementById('qr-content').innerHTML=
-    '<div class="between" style="margin-bottom:18px"><div><h3>QR Codes</h3><p class="mu" style="font-size:.82rem">Print and place at each poster. Two QRs per project: student (PIN) and guest (code).</p></div><button class="btn bp" onclick="openQRPrintAll()">\u{1F5A8} Print All</button></div>'+
+    '<div class="between" style="margin-bottom:18px"><div><h3>QR Codes</h3><p class="mu" style="font-size:.82rem">Print and place at each poster. Two QRs per project: student (Student ID) and guest (access code).</p></div><button class="btn bp" onclick="openQRPrintAll()">🖨 Print All</button></div>'+
     '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">General Voting Links</h4>'+
     '<div class="g2" style="margin-bottom:24px">'+
-      '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">\u{1F393} Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">PIN required &mdash; skips own group</p><div id="qov-stu"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovStu+'</p></div>'+
-      '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">\u{1F310} Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Guest code required &mdash; rates all groups</p><div id="qov-gst"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovGst+'</p></div>'+
+      '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">🎓 Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Student ID sign-in &mdash; own group excluded</p><div id="qov-stu"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovStu+'</p></div>'+
+      '<div class="qr-card" style="border-color:rgba(155,89,182,.35)"><p style="font-weight:600;margin-bottom:2px;color:var(--t2)">🌐 Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Guest code required &mdash; rates all projects</p><div id="qov-tch"></div><p class="mono" style="font-size:.69rem;color:var(--t2);word-break:break-all;margin-top:5px">'+ovTch+'</p></div>'+
     '</div>'+
     '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">Per-Project QR Codes</h4>'+
     '<div class="g3" id="qr-per-group">'+perG+'</div>';
-
   setTimeout(()=>{
-    makeQR('qov-stu',ovStu,130);makeQR('qov-gst',ovGst,130);
+    makeQR('qov-stu',ovStu,130); makeQR('qov-tch',ovTch,130);
     groups.forEach(g=>{
-      const su=base+'?class='+c.id+'&mode=student&group='+g.id;
-      const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
-      makeQR('qg-s-'+g.id,su,100);makeQR('qg-g-'+g.id,gu,100);
+      const su=base+'?campus='+c.id+'&mode=student&group='+g.id;
+      const tu=base+'?campus='+c.id+'&mode=guest&group='+g.id;
+      makeQR('qg-s-'+g.id,su,100); makeQR('qg-t-'+g.id,tu,100);
     });
   },50);
 }
-
 function makeQR(id,url,sz){
-  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
-  try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#0d0f14',colorLight:'#f0f2ff',correctLevel:QRCode.CorrectLevel.M});}
-  catch(e){el.innerHTML='<p class="mu" style="font-size:.72rem;word-break:break-all">'+url+'</p>';}
+  const el=document.getElementById(id); if(!el) return; el.innerHTML='';
+  try{ new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#0d0f14',colorLight:'#f0f2ff',correctLevel:QRCode.CorrectLevel.M}); }
+  catch(e){ el.innerHTML='<p class="mu" style="font-size:.72rem;word-break:break-all">'+url+'</p>'; }
 }
-
 function openQRPrintAll(){
   const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
   const c=currentClass;
   document.getElementById('qr-modal-title').textContent=c.name;
   let body='';
   groups.forEach(g=>{
-    const su=base+'?class='+c.id+'&mode=student&group='+g.id;
-    const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
-    body+='<div style="border:1px solid var(--bdr);border-radius:var(--r);padding:18px;margin-bottom:16px;page-break-inside:avoid"><h3 style="font-family:var(--fH);margin-bottom:2px">'+esc(g.name)+'</h3><p style="color:var(--a2);font-size:.85rem;margin-bottom:12px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:18px"><div style="text-align:center"><p style="font-weight:600;margin-bottom:7px">\u{1F393} Student Voting (PIN required)</p><div id="qpa-s-'+g.id+'"></div></div><div style="text-align:center"><p style="font-weight:600;margin-bottom:7px">\u{1F310} Guest Voting (Guest Code)</p><div id="qpa-g-'+g.id+'"></div></div></div></div>';
+    const su=base+'?campus='+c.id+'&mode=student&group='+g.id;
+    const tu=base+'?campus='+c.id+'&mode=guest&group='+g.id;
+    body+=`<div style="border:1px solid var(--bdr);border-radius:var(--r);padding:18px;margin-bottom:16px;page-break-inside:avoid">
+      <h3 style="font-family:var(--fH);margin-bottom:2px">${esc(g.name)}</h3>
+      <p style="color:var(--a2);font-size:.85rem;margin-bottom:12px">📋 ${esc(g.projectName)}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div style="text-align:center"><p style="font-weight:600;margin-bottom:7px">🎓 Student Voting (sign in with Student ID)</p><div id="qpa-s-${g.id}"></div></div>
+        <div style="text-align:center"><p style="font-weight:600;margin-bottom:7px;color:var(--t2)">🌐 Guest Voting (access code)</p><div id="qpa-t-${g.id}"></div></div>
+      </div>
+    </div>`;
   });
   document.getElementById('qr-modal-body').innerHTML=body;
   openModal('modal-qr');
-  setTimeout(()=>{groups.forEach(g=>{const su=base+'?class='+c.id+'&mode=student&group='+g.id;const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;makeQR('qpa-s-'+g.id,su,170);makeQR('qpa-g-'+g.id,gu,170);});},60);
+  setTimeout(()=>{
+    groups.forEach(g=>{
+      const su=base+'?campus='+c.id+'&mode=student&group='+g.id;
+      const tu=base+'?campus='+c.id+'&mode=guest&group='+g.id;
+      makeQR('qpa-s-'+g.id,su,170); makeQR('qpa-t-'+g.id,tu,170);
+    });
+  },60);
 }
-
 function openQRPrint(groupId){
-  const g=groups.find(x=>x.id===groupId);if(!g)return;
+  const g=groups.find(x=>x.id===groupId); if(!g) return;
   const base=location.origin+location.pathname.replace('index.html','')+'vote.html';
   const c=currentClass;
-  const su=base+'?class='+c.id+'&mode=student&group='+g.id;
-  const gu=base+'?class='+c.id+'&mode=guest&group='+g.id;
+  const su=base+'?campus='+c.id+'&mode=student&group='+g.id;
+  const tu=base+'?campus='+c.id+'&mode=guest&group='+g.id;
   document.getElementById('qr-modal-title').textContent=g.name;
-  document.getElementById('qr-modal-body').innerHTML='<div style="border:1px solid var(--bdr);border-radius:var(--r);padding:20px"><h3 style="font-family:var(--fH);margin-bottom:2px">'+esc(g.name)+'</h3><p style="color:var(--a2);font-size:.87rem;margin-bottom:14px">\u{1F4CB} '+esc(g.projectName)+'</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px"><div style="text-align:center"><p style="font-weight:600;margin-bottom:8px">\u{1F393} Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Requires student PIN</p><div id="qps-stu"></div></div><div style="text-align:center"><p style="font-weight:600;margin-bottom:8px">\u{1F310} Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Requires guest code</p><div id="qps-gst"></div></div></div></div>';
+  document.getElementById('qr-modal-body').innerHTML=`
+    <div style="border:1px solid var(--bdr);border-radius:var(--r);padding:20px">
+      <h3 style="font-family:var(--fH);margin-bottom:2px">${esc(g.name)}</h3>
+      <p style="color:var(--a2);font-size:.87rem;margin-bottom:14px">📋 ${esc(g.projectName)}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="text-align:center"><p style="font-weight:600;margin-bottom:8px">🎓 Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Sign in with Student ID</p><div id="qps-stu"></div></div>
+        <div style="text-align:center"><p style="font-weight:600;margin-bottom:8px;color:var(--t2)">🌐 Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:8px">Requires guest access code</p><div id="qps-tch"></div></div>
+      </div>
+    </div>`;
   openModal('modal-qr');
-  setTimeout(()=>{makeQR('qps-stu',su,190);makeQR('qps-gst',gu,190);},60);
+  setTimeout(()=>{ makeQR('qps-stu',su,190); makeQR('qps-tch',tu,190); },60);
 }
 
+// ——— WEIGHTED SCORING (confidence-weighted) ———
+// Shared by the campus leaderboard and the semester overview so both always
+// rank posters with exactly the same maths (see Score Calculation Formula.docx).
+// Guest / judge ratings count more than student ratings, because judges assess
+// posters more consistently. On top of that, the NUMBER of votes matters: a side
+// backed by many votes is trusted more than one resting on a single lucky vote.
+const TEACHER_WEIGHT = 0.70;   // base share — guests & judges
+const STUDENT_WEIGHT = 0.30;   // base share — students   (these add up to 1)
+// Confidence smoothing constant. A side's confidence = n / (n + K).
+//   1 vote -> 0.25,  3 votes -> 0.50,  10 votes -> 0.77 (with K=3).
+const CONFIDENCE_K = 3;
+
+function computeRanking(grps, votes){
+  const agg={};
+  grps.forEach(g=>agg[g.id]={group:g,stuScores:[],teaScores:[],
+    avgD:0,avgN:0,avgC:0,avgT:0,n:0,nStu:0,nTea:0});
+  votes.forEach(v=>{
+    // a guest OR teacher vote counts towards the judge weight; anything else is a student
+    const isTeacher = (v.voterType==='teacher' || v.voterType==='guest');
+    if(v.ratings){
+      Object.entries(v.ratings).forEach(([gid,sc])=>{
+        if(agg[gid]) (isTeacher?agg[gid].teaScores:agg[gid].stuScores).push(sc);
+      });
+    } else if(v.groupId&&agg[v.groupId]){
+      (isTeacher?agg[v.groupId].teaScores:agg[v.groupId].stuScores).push(v.scores||{});
+    }
+  });
+  // average a list of score objects for one criterion
+  const avgOf=(list,key)=> list.length
+    ? list.reduce((s,v)=>s+(v[key]||0),0)/list.length : 0;
+  Object.values(agg).forEach(e=>{
+    e.nStu=e.stuScores.length;
+    e.nTea=e.teaScores.length;
+    e.n=e.nStu+e.nTea;
+    if(!e.n) return;
+
+    // per-criterion averages for each voter group, kept separate
+    const sD=avgOf(e.stuScores,'design'),  tD=avgOf(e.teaScores,'design');
+    const sN=avgOf(e.stuScores,'novelty'), tN=avgOf(e.teaScores,'novelty');
+    const sC=avgOf(e.stuScores,'content'), tC=avgOf(e.teaScores,'content');
+
+    // confidence of each side grows with its number of votes (0 votes -> 0)
+    const confTea = e.nTea/(e.nTea+CONFIDENCE_K);
+    const confStu = e.nStu/(e.nStu+CONFIDENCE_K);
+
+    // effective weight = base share scaled by how trustworthy that side is.
+    // A side with no votes contributes nothing, and because the weights are
+    // re-normalised below the remaining side carries the score honestly
+    // instead of the group being scored as if it got zeros.
+    let wTea = TEACHER_WEIGHT*confTea;
+    let wStu = STUDENT_WEIGHT*confStu;
+    const wSum = wTea+wStu;
+    if(wSum>0){ wTea/=wSum; wStu/=wSum; }   // re-normalise so wTea+wStu = 1
+    e.wTea=wTea; e.wStu=wStu;
+
+    e.avgD = tD*wTea + sD*wStu;
+    e.avgN = tN*wTea + sN*wStu;
+    e.avgC = tC*wTea + sC*wStu;
+    e.avgT = (e.avgD+e.avgN+e.avgC)/3;
+  });
+  return Object.values(agg).sort((a,b)=>b.avgT-a.avgT);
+}
+
+// ——— RESULTS ———
 async function loadResults(){
-  if(!currentClass)return;
+  if(!currentClass) return;
   const c=currentClass;
-  document.getElementById('res-title').textContent='Results \u2014 '+c.name;
-  const[grpSnap,voteSnap,stuSnap]=await Promise.all([db.collection('classes').doc(c.id).collection('groups').get(),db.collection('classes').doc(c.id).collection('votes').get(),db.collection('classes').doc(c.id).collection('students').get()]);
+  const semLabel = (currentSemester && currentSemester.name) || c.semesterName || '';
+  document.getElementById('res-title').textContent =
+    'Results — ' + (semLabel ? semLabel + ' › ' : '') + c.name;
+  let grpSnap, voteSnap, stuSnap;
+  try {
+    [grpSnap,voteSnap,stuSnap] = await Promise.all([
+      db.collection('campuses').doc(c.id).collection('groups').get(),
+      db.collection('campuses').doc(c.id).collection('votes').get(),
+      db.collection('campuses').doc(c.id).collection('students').get()
+    ]);
+  } catch(e){ loadError('res-list', e, 'results'); return; }
   const grps=grpSnap.docs.map(d=>({id:d.id,...d.data()}));
   const votes=voteSnap.docs.map(d=>({id:d.id,...d.data()}));
   const stus=stuSnap.docs.map(d=>d.data());
   const stuVoted=stus.filter(s=>s.hasVoted).length;
-  const guestVotes=votes.filter(v=>v.voterType==='guest').length;
+  const teacherVotes=votes.filter(v=>v.voterType==='teacher'||v.voterType==='guest').length;
   const stuVotes=votes.filter(v=>v.voterType==='student').length;
   document.getElementById('res-stats').innerHTML=
-    '<span class="mu" style="font-size:.81rem">\u{1F393} '+stuVotes+' student votes</span>'+
-    '<span class="mu" style="font-size:.81rem">\u{1F310} '+guestVotes+' guest votes</span>'+
-    '<span class="mu" style="font-size:.81rem">\u{1F465} '+stuVoted+'/'+stus.length+' students submitted</span>'+
-    '<span class="badge '+(c.votingOpen?'bgn':'bn')+'">'+(c.votingOpen?'\u{1F7E2} Open':'\u23F8 Closed')+'</span>';
+    '<span class="mu" style="font-size:.81rem">🎓 '+stuVotes+' student votes</span>'+
+    '<span class="mu" style="font-size:.81rem">🌐 '+teacherVotes+' guest / judge votes</span>'+
+    '<span class="mu" style="font-size:.81rem">👥 '+stuVoted+'/'+stus.length+' students submitted</span>'+
+    '<span class="badge '+(c.votingOpen?'bgn':'bn')+'">'+(c.votingOpen?'🟢 Open':'⏸ Closed')+'</span>';
 
-  const agg={};
-  grps.forEach(g=>agg[g.id]={group:g,allScores:[],avgD:0,avgN:0,avgC:0,avgT:0,n:0});
-  // New format: each vote doc has ratings:{groupId:{design,novelty,content},...}
-  votes.forEach(v=>{
-    if(v.ratings){Object.entries(v.ratings).forEach(([gid,sc])=>{if(agg[gid])agg[gid].allScores.push(sc);});}
-    else if(v.groupId&&agg[v.groupId]){agg[v.groupId].allScores.push(v.scores||{});}
-  });
-  Object.values(agg).forEach(e=>{const n=e.allScores.length;e.n=n;if(!n)return;e.avgD=e.allScores.reduce((s,v)=>s+(v.design||0),0)/n;e.avgN=e.allScores.reduce((s,v)=>s+(v.novelty||0),0)/n;e.avgC=e.allScores.reduce((s,v)=>s+(v.content||0),0)/n;e.avgT=(e.avgD+e.avgN+e.avgC)/3;});
-  const sorted=Object.values(agg).sort((a,b)=>b.avgT-a.avgT);
-  const MEDAL=['\u{1F947}','\u{1F948}','\u{1F949}'];
-  if(!sorted.length){document.getElementById('res-list').innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:2.2rem;margin-bottom:8px">\u{1F5F3}</div><h3>No votes yet</h3></div>';return;}
+  const sorted = computeRanking(grps, votes);
+  const MEDAL=['🥇','🥈','🥉'];
+
+  // ——— BEST POSTER BANNER (campus-wide winner) ———
+  const winnerEl=document.getElementById('res-winner');
+  if(sorted.length && sorted[0].n>0){
+    const w=sorted[0];
+    winnerEl.innerHTML=`
+      <div class="winner-banner" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="font-size:2.8rem;line-height:1">🏆</div>
+        <div style="flex:1;min-width:160px">
+          <p class="fl" style="color:var(--go);margin-bottom:3px">🏆 Best Poster — ${esc(c.name)}</p>
+          <h2 style="font-size:1.3rem;color:var(--go);margin-bottom:2px">${esc(w.group.name)}</h2>
+          <p style="font-size:.85rem;color:var(--a2);margin-bottom:6px">📋 ${esc(w.group.projectName)}</p>
+          <p class="mu" style="font-size:.79rem">Highest weighted score campus-wide — guest / judge ratings count more than student ratings (70/30 base), and the side with more votes is trusted more.</p>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:2.2rem;font-weight:800;font-family:var(--fM);color:var(--go);line-height:1">${w.avgT.toFixed(2)}</div>
+          <div class="mu" style="font-size:.73rem">avg / 5</div>
+          <div class="badge bgo" style="margin-top:5px">${w.n} rating${w.n!==1?'s':''}</div>
+        </div>
+      </div>`;
+  } else {
+    winnerEl.innerHTML='';
+  }
+
+  if(!sorted.length){
+    document.getElementById('res-list').innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:2.2rem;margin-bottom:8px">🗳</div><h3>No votes yet</h3></div>';
+    return;
+  }
   document.getElementById('res-list').innerHTML=sorted.map((e,i)=>{
     const isTop=i===0&&e.n>0;
-    return '<div class="card fu" style="margin-bottom:12px;border:'+(isTop?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.45)':i===2?'1.5px solid rgba(205,127,50,.45)':'1px solid var(--bdr)')+';background:'+(isTop?'rgba(246,195,71,.04)':'var(--sf)')+'"><div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="width:46px;height:46px;border-radius:11px;background:var(--s3);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:'+(i<3&&e.n>0?'1.35rem':'.86rem')+';font-family:var(--fM);font-weight:700;color:var(--mu);flex-shrink:0">'+(i<3&&e.n>0?MEDAL[i]:'#'+(i+1))+'</div><div style="flex:1;min-width:165px"><div class="flex" style="margin-bottom:2px;flex-wrap:wrap"><h3 style="font-size:.95rem">'+esc(e.group.name)+'</h3>'+(isTop?'<span class="badge bgo">\u{1F451} Leader</span>':'')+'</div><p style="color:var(--a2);font-size:.81rem;margin-bottom:10px">\u{1F4CB} '+esc(e.group.projectName)+'</p><div style="display:flex;flex-direction:column;gap:5px">'+rbar('\u{1F3A8} Design',e.avgD,'var(--ac)')+rbar('\u{1F4A1} Novelty',e.avgN,'var(--gn)')+rbar('\u{1F4D6} Content',e.avgC,'var(--go)')+'</div></div><div style="text-align:center;flex-shrink:0"><div style="font-size:1.85rem;font-weight:800;font-family:var(--fM);color:'+(isTop?'var(--go)':'var(--wh)')+';line-height:1;margin-bottom:3px">'+(e.n?e.avgT.toFixed(2):'&mdash;')+'</div><div class="mu" style="font-size:.73rem">avg / 5</div><div class="badge bn" style="margin-top:5px">'+e.n+' rating'+(e.n!==1?'s':'')+'</div></div></div></div>';
+    return `<div class="card fu" style="margin-bottom:12px;border:${isTop?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.45)':i===2?'1.5px solid rgba(205,127,50,.45)':'1px solid var(--bdr)'};background:${isTop?'rgba(246,195,71,.04)':'var(--sf)'}">
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="width:46px;height:46px;border-radius:11px;background:var(--s3);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:${i<3&&e.n>0?'1.35rem':'.86rem'};font-family:var(--fM);font-weight:700;color:var(--mu);flex-shrink:0">${i<3&&e.n>0?MEDAL[i]:'#'+(i+1)}</div>
+        <div style="flex:1;min-width:165px">
+          <div class="flex" style="margin-bottom:2px;flex-wrap:wrap">
+            <h3 style="font-size:.95rem">${esc(e.group.name)}</h3>
+            ${isTop?'<span class="badge bgo">🏆 Best Poster</span>':''}
+          </div>
+          <p style="color:var(--a2);font-size:.81rem;margin-bottom:10px">📋 ${esc(e.group.projectName)}</p>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            ${rbar('🎨 Design',e.avgD,'var(--ac)')}
+            ${rbar('💡 Novelty',e.avgN,'var(--gn)')}
+            ${rbar('📖 Content',e.avgC,'var(--go)')}
+          </div>
+        </div>
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-size:1.85rem;font-weight:800;font-family:var(--fM);color:${isTop?'var(--go)':'var(--wh)'};line-height:1;margin-bottom:3px">${e.n?e.avgT.toFixed(2):'&mdash;'}</div>
+          <div class="mu" style="font-size:.73rem">avg / 5</div>
+          <div class="badge bn" style="margin-top:5px">${e.n} rating${e.n!==1?'s':''}</div>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function rbar(label,val,color){const pct=(val/5)*100;return '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.73rem;color:var(--mu);width:66px;flex-shrink:0">'+label+'</span><div class="pbar-w"><div class="pbar-f" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+'88)"></div></div><span class="mono" style="font-size:.74rem;color:var(--mu);min-width:24px">'+val.toFixed(1)+'</span></div>';}
+function rbar(label,val,color){
+  const pct=(val/5)*100;
+  return `<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.73rem;color:var(--mu);width:66px;flex-shrink:0">${label}</span><div class="pbar-w"><div class="pbar-f" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}88)"></div></div><span class="mono" style="font-size:.74rem;color:var(--mu);min-width:24px">${val.toFixed(1)}</span></div>`;
+}
 
-function showResults(){show('view-results');loadResults();}
-function showClass(){stopAutoRefresh();show('view-class');}
+// ——— SEMESTER RESULTS: the Best Poster of each campus, side by side ———
+function showSemesterResults(){ show('view-semres'); loadSemesterResults(); }
+
+async function loadSemesterResults(){
+  if(!currentSemester){ await showSemesters(); return; }
+  document.getElementById('semres-crumb').textContent = currentSemester.id ? 'Semester' : '';
+  document.getElementById('semres-title').textContent = 'Results — ' + currentSemester.name;
+
+  const list = campusesOf(currentSemester.id);
+  const wrap = document.getElementById('semres-list');
+  if(!list.length){
+    wrap.innerHTML = '<div class="card" style="text-align:center;padding:40px"><div style="font-size:2.2rem;margin-bottom:8px">&#127963;</div><h3>No campuses in this semester yet</h3></div>';
+    return;
+  }
+  wrap.innerHTML = '<div class="card" style="text-align:center;padding:36px"><span class="spinner"></span><p class="mu" style="font-size:.83rem;margin-top:10px">Tallying '+list.length+' campus'+(list.length===1?'':'es')+'…</p></div>';
+
+  let results;
+  try {
+  results = await Promise.all(list.map(async c => {
+    const [grpSnap, voteSnap, stuSnap] = await Promise.all([
+      db.collection('campuses').doc(c.id).collection('groups').get(),
+      db.collection('campuses').doc(c.id).collection('votes').get(),
+      db.collection('campuses').doc(c.id).collection('students').get()
+    ]);
+    const grps  = grpSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const votes = voteSnap.docs.map(d=>d.data());
+    const stus  = stuSnap.docs.map(d=>d.data());
+    const ranked = computeRanking(grps, votes);
+    return {campus:c, ranked, nGroups:grps.length, nVotes:votes.length,
+            nStu:stus.length, nVoted:stus.filter(s=>s.hasVoted).length};
+  }));
+  } catch(e){ loadError('semres-list', e, 'semester results'); return; }
+
+  wrap.innerHTML = results.map(r => {
+    const c = r.campus;
+    const w = r.ranked.length && r.ranked[0].n>0 ? r.ranked[0] : null;
+    const runners = r.ranked.filter(e=>e.n>0).slice(1,3);
+    return `<div class="card fu" style="margin-bottom:12px;border-color:${w?'var(--go)':'var(--bdr)'}">
+      <div class="between" style="margin-bottom:${w?'12px':'0'}">
+        <div class="flex"><span style="font-size:1.15rem">&#127963;</span>
+          <h3 style="font-size:1.02rem">${esc(c.name)}</h3>
+          <span class="badge ${c.votingOpen?'bgn':'bn'}">${c.votingOpen?'&#128994; Open':'&#9646; Closed'}</span>
+        </div>
+        <div class="flex">
+          <span class="mu" style="font-size:.78rem">&#128499; ${r.nVotes} votes &middot; &#128101; ${r.nVoted}/${r.nStu} students</span>
+          <button class="btn bs bsm" onclick="openCampusResults('${c.id}')">Full leaderboard &#8594;</button>
+        </div>
+      </div>
+      ${w ? `
+      <div class="winner-banner" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="font-size:2.2rem;line-height:1">&#127942;</div>
+        <div style="flex:1;min-width:160px">
+          <p class="fl" style="color:var(--go);margin-bottom:3px">Best Poster</p>
+          <h3 style="font-size:1.12rem;color:var(--go);margin-bottom:2px">${esc(w.group.name)}</h3>
+          <p style="font-size:.84rem;color:var(--a2)">&#128203; ${esc(w.group.projectName)}</p>
+          ${runners.length ? `<p class="mu" style="font-size:.77rem;margin-top:6px">Runners-up: ${runners.map((e,i)=>(i?'':'&#129352; ')+(i?'&#129353; ':'')+esc(e.group.name)+' ('+e.avgT.toFixed(2)+')').join(' &middot; ')}</p>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:1.75rem;font-weight:800;font-family:var(--fM);color:var(--go);line-height:1">${w.avgT.toFixed(2)}</div>
+          <div class="mu" style="font-size:.72rem">avg / 5</div>
+          <div class="badge bgo" style="margin-top:5px">${w.n} rating${w.n!==1?'s':''}</div>
+        </div>
+      </div>` : `<p class="mu" style="font-size:.84rem;margin-top:8px">No votes cast yet${r.nGroups?'':' — no groups created either'}.</p>`}
+    </div>`;
+  }).join('');
+}
+
+// jump from the semester overview straight into one campus's leaderboard
+async function openCampusResults(campusId){
+  await loadCampus(campusId);
+  showResults();
+}
+
+function showResults(){ show('view-results'); loadResults(); }
+function showCampus(){ stopAutoRefresh(); show('view-campus'); }
 let autoOn=false;
-function toggleAutoRefresh(){autoOn=!autoOn;document.getElementById('btn-auto').textContent=autoOn?'\u{1F504} Live':'\u23F8 Paused';document.getElementById('btn-auto').className='btn bsm '+(autoOn?'bp':'bs');if(autoOn)autoTimer=setInterval(loadResults,15000);else stopAutoRefresh();}
-function stopAutoRefresh(){clearInterval(autoTimer);autoOn=false;}
+function toggleAutoRefresh(){
+  autoOn=!autoOn;
+  document.getElementById('btn-auto').textContent=autoOn?'🔄 Live':'⏸ Paused';
+  document.getElementById('btn-auto').className='btn bsm '+(autoOn?'bp':'bs');
+  if(autoOn) autoTimer=setInterval(loadResults,15000); else stopAutoRefresh();
+}
+function stopAutoRefresh(){ clearInterval(autoTimer); autoOn=false; }
 </script>
 </body>
 </html>
