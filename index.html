@@ -379,13 +379,13 @@ tbody tr:hover{background:var(--s2)}
 // FIREBASE CONFIG
 // =====================================================
 const firebaseConfig = {
-  apiKey:            "AIzaSyCAjeQf19uJd2_2QMolg8Tu02n6FtHKxH0",
-  authDomain:        "postervote-393ae.firebaseapp.com",
-  projectId:         "postervote-393ae",
-  storageBucket:     "postervote-393ae.firebasestorage.app",
-  messagingSenderId: "346700138124",
-  appId:             "1:346700138124:web:f714e8e813edbe1dd01da9",
-  measurementId:     "G-LBLE1XRH6L"
+  apiKey:            "AIzaSyChFTqAhyMaGZzR9v-M0zQA3VZZGt3hQzc",
+  authDomain:        "poster-vote-b6489.firebaseapp.com",
+  projectId:         "poster-vote-b6489",
+  storageBucket:     "poster-vote-b6489.firebasestorage.app",
+  messagingSenderId: "831679598650",
+  appId:             "1:831679598650:web:f447567db5ad1a6f2d6503",
+  measurementId:     "G-5QB1PV24LP"
 };
 // =====================================================
 // Firestore structure (NEW):
@@ -437,8 +437,10 @@ async function loadSemesterData(){
     db.collection('semesters').get(),
     db.collection('campuses').get()
   ]);
-  semesters   = semSnap.docs.map(d => ({id:d.id,...d.data()}));
-  allCampuses = clsSnap.docs.map(d => ({id:d.id,...d.data()}));
+  // ids starting with _ are diagnostic probes, never real records
+  const real = d => d.id.charAt(0) !== '_';
+  semesters   = semSnap.docs.filter(real).map(d => ({id:d.id,...d.data()}));
+  allCampuses = clsSnap.docs.filter(real).map(d => ({id:d.id,...d.data()}));
   semesters.sort((a,b) => String(b.name||'').localeCompare(String(a.name||''), undefined, {numeric:true}));
 }
 function campusesOf(semId){
@@ -473,6 +475,14 @@ function loadError(targetId, e, what){
   </div>`;
 }
 
+// Writes a throwaway doc and removes it again. The delete runs even if something
+// later throws, so a probe can never leave a stray card on the semesters screen.
+async function probeWrite(col){
+  const ref = db.collection(col).doc('_diagnostic_probe');
+  try { await ref.set({probe:true, at:Date.now()}); }
+  finally { try { await ref.delete(); } catch(_){} }
+}
+
 // Probes each collection separately so we can tell WHICH rule is missing,
 // instead of guessing from a single "permission denied".
 async function runDiagnostics(){
@@ -480,14 +490,15 @@ async function runDiagnostics(){
   if(!out) return;
   out.innerHTML = '<p class="mu" style="font-size:.82rem"><span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Probing…</p>';
 
+  // Probe 2 is the important one. Reading /campuses is allowed by `if true`, so it
+  // passes whether or not Firestore can see our login. Writing to /campuses needs
+  // request.auth != null and exists in BOTH the old and the new ruleset — so it
+  // separates "the semesters block is missing" from "our token never arrives".
   const probes = [
-    ['read  /semesters              (list)', () => db.collection('semesters').limit(1).get()],
-    ['read  /campuses               (list)', () => db.collection('campuses').limit(1).get()],
-    ['write /semesters/_diagnostic  (create)', async () => {
-        const ref = db.collection('semesters').doc('_diagnostic_probe');
-        await ref.set({probe:true});
-        await ref.delete();
-      }],
+    ['read  /semesters              (list)  ', () => db.collection('semesters').limit(1).get()],
+    ['read  /campuses               (list)  ', () => db.collection('campuses').limit(1).get()],
+    ['write /campuses/_probe        (create)', () => probeWrite('campuses')],
+    ['write /semesters/_probe       (create)', () => probeWrite('semesters')],
   ];
 
   const rows = [];
@@ -496,20 +507,35 @@ async function runDiagnostics(){
     catch(e){ rows.push({label, ok:false, code:(e && e.code) || 'error', msg:(e&&e.message)||''}); }
   }
 
+  // Does Firestore actually receive an auth token? A UID on screen only proves the
+  // Auth SDK has one, not that the Firestore SDK is attaching it to requests.
+  let tok = 'no token';
+  try {
+    if(currentUser){
+      const r = await currentUser.getIdTokenResult(true);
+      tok = 'token ok, aud=' + (r.claims.aud || '?') + ', exp=' + new Date(r.expirationTime).toLocaleTimeString();
+    }
+  } catch(e){ tok = 'token error: ' + ((e && e.code) || e.message); }
+
   const ok = n => rows[n] && rows[n].ok;
   let verdict;
-  if(ok(0) && ok(1) && ok(2)){
+  if(ok(0) && ok(1) && ok(2) && ok(3)){
     verdict = 'All probes passed. The rules are fine now — reload the page.';
   } else if(!ok(0) && !ok(1)){
-    verdict = 'Both collections are denied, so the rules you pasted are not the ones deployed on this database. '
-            + 'Most likely the Publish button was not clicked, or the project has more than one Firestore database and '
-            + 'the rules went to a different one — check the database dropdown at the top of the Firestore page. '
-            + 'App Check enforcement can also cause this: if App Check is turned on for Firestore and this app has no '
-            + 'App Check token, every request is refused no matter what the rules say.';
-  } else if(ok(1) && !ok(0)){
-    verdict = 'Campuses are readable but semesters are not — your deployed rules are the OLD set, missing the '
-            + 'match /semesters/{semesterId} block. Add it and Publish.';
-  } else if(ok(0) && !ok(2)){
+    verdict = 'Even the public read of /campuses is denied, so no ruleset here matches what you pasted. '
+            + 'Either the rules went to a different Firestore database (check the database dropdown at the top of '
+            + 'the Rules page — rules are published per database), or App Check is enforced on Firestore and this '
+            + 'page has no App Check token, which refuses every request regardless of rules.';
+  } else if(ok(1) && !ok(2)){
+    verdict = 'Public reads work but every signed-in write is denied, including /campuses — which is auth-gated in '
+            + 'the old ruleset too. So this is NOT a missing semesters block: Firestore is seeing request.auth as '
+            + 'null. Check that the admin account belongs to project ' + firebaseConfig.projectId + ', and that the '
+            + 'Firestore database you are reading is the one those rules were published to.';
+  } else if(ok(2) && !ok(0)){
+    verdict = 'Signed-in writes to /campuses succeed, so your login does reach Firestore — but /semesters is denied. '
+            + 'The deployed ruleset really is the OLD one, missing the match /semesters/{semesterId} block. '
+            + 'Add it and click Publish.';
+  } else if(ok(0) && !ok(3)){
     verdict = 'Semesters can be read but not written. The semesters block is probably read-only — it needs '
             + 'allow read, write: if request.auth != null.';
   } else {
@@ -523,7 +549,7 @@ async function runDiagnostics(){
       (r.ok ? '✓ ' : '✗ ') + esc(r.label) + ' → ' + esc(r.code) + '</p>').join('') +
     '<p style="font-size:.82rem;margin-top:10px;color:var(--wh)">' + esc(verdict) + '</p>' +
     '<p class="mono mu" style="font-size:.72rem;margin-top:8px">project: ' + esc(firebaseConfig.projectId) +
-    ' · uid: ' + esc(currentUser ? currentUser.uid : 'none') + '</p>' +
+    ' · uid: ' + esc(currentUser ? currentUser.uid : 'none') + '<br>auth: ' + esc(tok) + '</p>' +
     '</div>';
 }
 
