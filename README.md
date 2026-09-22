@@ -134,15 +134,15 @@ students cannot sign in. Use ✏️ in the Students tab to fix them, or **+ Add 
 
 ## 🗳 The 3-Project Limit
 
-- A student taps **"Rate this project"** to add a poster to their picks. After 3 picks,
+- A voter (student **or guest**) taps **"Rate this project"** to add a poster to their picks. After 3 picks,
   the remaining cards lock and show *"Limit reached"*.
 - Removing a pick frees the slot again.
 - A project only counts once **all three criteria** are scored — this prevents partial
   ratings from being averaged in as zeros.
-- The limit is configurable per campus: **Voting tab → Maximum projects one student may rate**.
-- Guests and judges are **not** limited.
+- The limit is configurable per campus: **Voting tab → Maximum projects one voter may rate**.
+- The same limit applies to guests and judges.
 
-To enforce the cap server-side as well, the Firestore rules below include a `ratings.size()` check.
+To enforce the cap server-side as well, the Firestore rules below include a `ratings.size()` check that reads the campus's saved limit.
 
 ---
 
@@ -193,9 +193,9 @@ service cloud.firestore {
 
       match /votes/{voteId} {
         allow read: if request.auth != null;
-        // students may submit at most 3 projects in one vote; guests are unlimited
-        allow create: if request.resource.data.voterType != 'student'
-                      || request.resource.data.ratings.size() <= 3;
+        // every voter (student or guest) may submit at most the campus's saved limit (default 3)
+        allow create: if request.resource.data.ratings.size()
+                      <= get(/databases/$(database)/documents/campuses/$(campusId)).data.get('maxVotesPerStudent', 3);
         allow update, delete: if request.auth != null;
       }
     }
@@ -212,7 +212,7 @@ service cloud.firestore {
 }
 ```
 
-If you raise the per-campus limit above 3, raise the `<= 3` in the rule to match.
+The rule follows whatever limit you save in the Voting tab, so there is nothing to change here when you raise or lower it.
 
 ---
 

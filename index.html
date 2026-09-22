@@ -14,9 +14,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--ink:#0d0f14;--ink2:#1e2230;--mu:#7a8099;--bdr:#2e3347;--sf:#181c28;--s2:#1f2436;--s3:#262d42;--ac:#5b6cff;--a2:#8b9cff;--ag:rgba(91,108,255,.2);--go:#f6c347;--g2:#ffda80;--gn:#3ecf8e;--rd:#ff5c72;--wh:#f0f2ff;--tc:#9b59b6;--t2:#be90d4;--tg:rgba(155,89,182,.2);--rS:6px;--r:12px;--rL:20px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
+:root{--ink:#0b0a1f;--ink2:#13122e;--mu:#9491bd;--bdr:#33305f;--sf:#171634;--s2:#1d1c40;--s3:#26244f;--ac:#8b5cf6;--a2:#c4b5fd;--pk:#ec4899;--ag:rgba(139,92,246,.22);--grad:linear-gradient(135deg,#8b5cf6 0%,#d946ef 55%,#ec4899 100%);--go:#fbbf24;--g2:#fde68a;--gn:#34d399;--rd:#fb7185;--wh:#f4f2ff;--tc:#22d3ee;--t2:#67e8f9;--tg:rgba(34,211,238,.2);--rS:6px;--r:12px;--rL:20px;--fH:'Syne',sans-serif;--fM:'DM Mono',monospace;--fB:'Lato',sans-serif}
 html{font-size:16px;scroll-behavior:smooth}
-body{background:var(--ink);color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
+body{background-color:var(--ink);background-image:radial-gradient(900px 520px at 0% -10%,rgba(139,92,246,.20),transparent 60%),radial-gradient(800px 480px at 100% 0%,rgba(236,72,153,.12),transparent 60%);background-attachment:fixed;color:var(--wh);font-family:var(--fB);line-height:1.6;min-height:100vh}
 h1,h2,h3,h4{font-family:var(--fH);line-height:1.2;font-weight:700}
 button{cursor:pointer;border:none;outline:none;font-family:var(--fB);transition:all .18s}
 input,select,textarea{font-family:var(--fB);outline:none;border:1.5px solid var(--bdr);background:var(--s3);color:var(--wh);border-radius:var(--rS);padding:9px 13px;font-size:.94rem;width:100%;transition:border-color .15s}
@@ -25,45 +25,45 @@ input::placeholder{color:var(--mu)}
 select option{background:var(--s3)}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--ink2)}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
 .page{min-height:100vh;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;border-bottom:1px solid var(--bdr);background:var(--ink2);position:sticky;top:0;z-index:100}
-.brand{font-family:var(--fH);font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;border-bottom:1px solid var(--bdr);background:rgba(19,18,46,.82);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100}
+.brand{font-family:var(--fH);font-size:1.05rem;font-weight:800;background:linear-gradient(90deg,#fff,#e9d5ff 60%,#f9a8d4);-webkit-background-clip:text;background-clip:text;color:transparent;display:flex;align-items:center;gap:8px}
 .content{flex:1;padding:26px;max-width:1180px;margin:0 auto;width:100%}
-.card{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--r);padding:20px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0)) ,var(--sf);box-shadow:0 10px 30px -18px rgba(0,0,0,.7);border:1px solid var(--bdr);border-radius:var(--r);padding:20px}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:var(--rS);font-size:.87rem;font-weight:600;font-family:var(--fH);cursor:pointer;transition:all .18s;white-space:nowrap}
-.bp{background:var(--ac);color:#fff}.bp:hover{background:var(--a2);box-shadow:0 0 16px var(--ag);transform:translateY(-1px)}.bp:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.bp{background:var(--grad);color:#fff;box-shadow:0 6px 20px -8px rgba(217,70,239,.55)}.bp:hover{filter:brightness(1.1);box-shadow:0 8px 26px -6px rgba(217,70,239,.6);transform:translateY(-1px)}.bp:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .bs{background:var(--s3);color:var(--wh);border:1px solid var(--bdr)}.bs:hover{border-color:var(--ac)}
-.bd{background:transparent;color:var(--rd);border:1px solid var(--rd)}.bd:hover{background:rgba(255,92,114,.1)}
-.bgold{background:var(--go);color:var(--ink)}.bgold:hover{background:var(--g2)}
+.bd{background:transparent;color:var(--rd);border:1px solid var(--rd)}.bd:hover{background:rgba(251,113,133,.1)}
+.bgold{background:linear-gradient(135deg,#fcd34d,#f59e0b);color:#2a1a00}.bgold:hover{background:var(--g2)}
 .bsm{padding:5px 11px;font-size:.79rem}
 .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:.74rem;font-weight:600;font-family:var(--fM)}
-.ba{background:var(--ag);color:var(--a2);border:1px solid var(--ac)}
+.ba{background:var(--ag);color:var(--a2);border:1px solid rgba(139,92,246,.6)}
 .bn{background:var(--s3);color:var(--mu);border:1px solid var(--bdr)}
-.bgn{background:rgba(62,207,142,.1);color:var(--gn);border:1px solid var(--gn)}
-.bgo{background:rgba(246,195,71,.1);color:var(--go);border:1px solid var(--go)}
-.brd{background:rgba(255,92,114,.1);color:var(--rd);border:1px solid var(--rd)}
-.btcb{background:rgba(155,89,182,.12);color:var(--t2);border:1px solid var(--tc)}
+.bgn{background:rgba(52,211,153,.1);color:var(--gn);border:1px solid var(--gn)}
+.bgo{background:rgba(251,191,36,.1);color:var(--go);border:1px solid var(--go)}
+.brd{background:rgba(251,113,133,.1);color:var(--rd);border:1px solid var(--rd)}
+.btcb{background:rgba(34,211,238,.12);color:var(--t2);border:1px solid var(--tc)}
 .alert{padding:10px 14px;border-radius:var(--rS);font-size:.84rem;margin-bottom:12px}
-.ae{background:rgba(255,92,114,.1);border:1px solid rgba(255,92,114,.3);color:var(--rd)}
-.ao{background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.3);color:var(--gn)}
-.ai{background:var(--ag);border:1px solid rgba(91,108,255,.3);color:var(--a2)}
-.overlay{position:fixed;inset:0;background:rgba(8,10,18,.9);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.ae{background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);color:var(--rd)}
+.ao{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--gn)}
+.ai{background:var(--ag);border:1px solid rgba(139,92,246,.3);color:var(--a2)}
+.overlay{position:fixed;inset:0;background:rgba(7,6,22,.9);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
 .modal{background:var(--sf);border:1px solid var(--bdr);border-radius:var(--rL);padding:28px;width:100%;max-width:520px;animation:fu .22s ease;max-height:92vh;overflow-y:auto}
 .modal.wide{max-width:680px}.modal.xl{max-width:860px}
 table{width:100%;border-collapse:collapse}
 th{font-family:var(--fM);font-size:.7rem;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;padding:8px 10px;text-align:left;border-bottom:1px solid var(--bdr)}
-td{padding:9px 10px;border-bottom:1px solid rgba(46,51,71,.45);font-size:.87rem;vertical-align:middle}
+td{padding:9px 10px;border-bottom:1px solid rgba(51,48,95,.45);font-size:.87rem;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tbody tr:hover{background:var(--s2)}
 .tabs{display:flex;gap:3px;background:var(--s2);padding:4px;border-radius:var(--r);border:1px solid var(--bdr);width:fit-content;margin-bottom:22px;flex-wrap:wrap}
 .tab-btn{padding:7px 14px;border-radius:var(--rS);font-size:.83rem;font-weight:600;font-family:var(--fH);color:var(--mu);background:transparent;transition:all .15s}
-.tab-btn.active{background:var(--ac);color:#fff}
+.tab-btn.active{background:var(--grad);color:#fff;box-shadow:0 4px 14px -6px rgba(217,70,239,.6)}
 .tab-btn:hover:not(.active){color:var(--wh)}
 .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
 .fl{font-size:.74rem;font-family:var(--fM);color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
 .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .pbar-w{height:6px;background:var(--s3);border-radius:100px;overflow:hidden;flex:1}
-.pbar-f{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--ac),var(--a2));transition:width .5s}
+.pbar-f{height:100%;border-radius:100px;background:var(--grad);transition:width .5s}
 .copybox{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rS);padding:8px 12px}
 .copybox code{flex:1;font-family:var(--fM);font-size:.79rem;color:var(--a2);word-break:break-all}
 .mono{font-family:var(--fM)} .mu{color:var(--mu)}
@@ -72,14 +72,14 @@ tbody tr:hover{background:var(--s2)}
 .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite}
 .hidden{display:none!important}
 .ck-list{max-height:200px;overflow-y:auto;border:1.5px solid var(--bdr);border-radius:var(--rS);background:var(--s3)}
-.ck-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(46,51,71,.35);transition:background .12s}
+.ck-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(51,48,95,.35);transition:background .12s}
 .ck-item:last-child{border-bottom:none}
 .ck-item:hover{background:var(--s2)}.ck-item.checked{background:var(--ag)}
 .ck-item input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--ac)}
 .qr-card{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;text-align:center}
 .qr-card canvas{border-radius:6px;margin:8px auto;display:block}
-.campus-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:600;font-family:var(--fM);background:rgba(91,108,255,.12);color:var(--a2);border:1px solid var(--ac)}
-.winner-banner{background:linear-gradient(135deg,rgba(246,195,71,.12),rgba(246,195,71,.04));border:2px solid var(--go);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.campus-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:.72rem;font-weight:600;font-family:var(--fM);background:rgba(139,92,246,.12);color:var(--a2);border:1px solid var(--ac)}
+.winner-banner{background:linear-gradient(135deg,rgba(251,191,36,.14),rgba(236,72,153,.06) 70%,rgba(139,92,246,.06));box-shadow:0 12px 40px -20px rgba(251,191,36,.45);border:2px solid var(--go);border-radius:var(--r);padding:16px;margin-bottom:14px}
 @media print{.no-print{display:none!important}body{background:#fff;color:#000}.qr-card{border:1px solid #ccc;page-break-inside:avoid;background:#fff}canvas{border-radius:4px}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
@@ -91,10 +91,10 @@ tbody tr:hover{background:var(--s2)}
 
 <!-- LOGIN -->
 <div id="view-login">
-<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(91,108,255,.16) 0%,var(--ink) 70%);padding:20px">
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(139,92,246,.16) 0%,var(--ink) 70%);padding:20px">
 <div class="fu" style="width:100%;max-width:380px">
   <div style="text-align:center;margin-bottom:32px">
-    <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:15px;background:var(--ac);margin-bottom:12px;font-size:1.8rem;box-shadow:0 0 28px var(--ag)">&#127942;</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:15px;background:var(--grad);margin-bottom:12px;font-size:1.8rem;box-shadow:0 10px 34px -8px rgba(217,70,239,.6)">&#127942;</div>
     <h1 style="font-size:1.8rem;margin-bottom:4px">PosterVote</h1>
     <p class="mu" style="font-size:.88rem">Campus Poster Session Voting System</p>
   </div>
@@ -160,7 +160,7 @@ tbody tr:hover{background:var(--s2)}
     <div style="margin-bottom:22px">
       <p id="semres-crumb" class="fl" style="margin-bottom:4px"></p>
       <h1 id="semres-title" style="font-size:1.55rem;margin-bottom:6px"></h1>
-      <p class="mu" style="font-size:.85rem">Best Poster for every campus in this semester. Open a campus for its full leaderboard.</p>
+      <p class="mu" style="font-size:.85rem">1st, 2nd and 3rd place for every campus in this semester. Open a campus for its full leaderboard.</p>
     </div>
     <div id="semres-list"></div>
   </div>
@@ -592,8 +592,8 @@ async function showSemesters(){
 
   if(orphans.length){
     const open = orphans.filter(c => c.votingOpen).length;
-    html += `<div class="card fu" style="display:flex;flex-direction:column;gap:11px;border-color:rgba(246,195,71,.45)">
-      <div style="width:40px;height:40px;border-radius:10px;background:rgba(246,195,71,.12);border:1px solid var(--go);display:flex;align-items:center;justify-content:center;font-size:1.3rem">&#128193;</div>
+    html += `<div class="card fu" style="display:flex;flex-direction:column;gap:11px;border-color:rgba(251,191,36,.45)">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(251,191,36,.12);border:1px solid var(--go);display:flex;align-items:center;justify-content:center;font-size:1.3rem">&#128193;</div>
       <div>
         <h3 style="font-size:.96rem;margin-bottom:3px">Unassigned campuses</h3>
         <p class="mu" style="font-size:.82rem">Created before semesters existed. Open to move them into one.</p>
@@ -1159,7 +1159,7 @@ function renderVotingTab(){
       </div>
       <p class="mu" style="font-size:.82rem;margin-bottom:11px">Students log in with the Student ID on their roster entry (e.g. <span class="mono">CIHE2026</span>). Upper or lower case both work &mdash; no PINs to hand out.</p>
       ${noId ? '<div class="alert ae" style="font-size:.8rem;margin-bottom:11px">⚠️ '+noId+' student'+(noId>1?'s have':' has')+' no Student ID and cannot sign in. Fix this in the Students tab.</div>' : ''}
-      <p class="fl" style="margin-bottom:5px">Maximum projects one student may rate</p>
+      <p class="fl" style="margin-bottom:5px">Maximum projects one voter may rate (students and guests)</p>
       <div style="display:flex;gap:9px;align-items:center">
         <input id="maxvotes-inp" type="number" min="1" max="20" value="${maxVotes}" style="max-width:110px"/>
         <button class="btn bs bsm" onclick="saveMaxVotes()">Save</button>
@@ -1167,13 +1167,13 @@ function renderVotingTab(){
         <span class="mu" style="font-size:.78rem">Default is 3.</span>
       </div>
     </div>
-    <div class="card" style="border-color:rgba(155,89,182,.4)">
+    <div class="card" style="border-color:rgba(34,211,238,.4)">
       <div class="flex" style="margin-bottom:6px">
         <span style="font-size:1.15rem">🌐</span>
         <h3>Guest Access Code</h3>
         <span class="badge btcb">For guests / judges only</span>
       </div>
-      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Share this code with guests, teachers or judges so they can vote anonymously on all projects. They are not limited to ${maxVotes}. Leave blank to disable guest voting.</p>
+      <p class="mu" style="font-size:.82rem;margin-bottom:11px">Share this code with guests, teachers or judges so they can vote anonymously. Like students, each guest can rate at most ${maxVotes} projects. Leave blank to disable guest voting.</p>
       <div style="display:flex;gap:9px;align-items:center">
         <input id="teacher-code-inp" value="${esc(guestCode)}" placeholder="e.g. GUEST2026" style="max-width:280px"/>
         <button class="btn bs bsm" onclick="saveTeacherCode()">Save</button>
@@ -1184,8 +1184,8 @@ function renderVotingTab(){
       <h3 style="margin-bottom:11px">Voting Links</h3>
       <p class="fl" style="margin-bottom:5px">🎓 Student Link &mdash; Student ID sign-in, max ${maxVotes} projects, own group excluded</p>
       <div class="copybox" style="margin-bottom:13px"><code>${sLink}</code><button class="btn bs bsm" onclick="cpText('${sLink}',this)">📋 Copy</button></div>
-      <p class="fl" style="margin-bottom:5px">🌐 Guest Link &mdash; requires Guest Code, can rate all projects</p>
-      <div class="copybox" style="border-color:rgba(155,89,182,.4)"><code style="color:var(--t2)">${tLink}</code><button class="btn bs bsm" onclick="cpText('${tLink}',this)">📋 Copy</button></div>
+      <p class="fl" style="margin-bottom:5px">🌐 Guest Link &mdash; requires Guest Code, max ${maxVotes} projects</p>
+      <div class="copybox" style="border-color:rgba(34,211,238,.4)"><code style="color:var(--t2)">${tLink}</code><button class="btn bs bsm" onclick="cpText('${tLink}',this)">📋 Copy</button></div>
       <p class="mu" style="font-size:.75rem;margin-top:8px">QR codes for each project are in the <strong>QR Codes</strong> tab.</p>
     </div>
     <div class="card">
@@ -1196,7 +1196,7 @@ function renderVotingTab(){
       <h3 style="margin-bottom:11px">Groups (${groups.length})</h3>
       ${groups.length?'<div style="display:flex;flex-direction:column;gap:6px">'+grpItems+'</div>':'<p class="mu" style="font-size:.83rem">No groups yet.</p>'}
     </div>
-    <div class="card" style="border-color:rgba(255,92,114,.3)">
+    <div class="card" style="border-color:rgba(251,113,133,.3)">
       <h3 style="margin-bottom:4px">Danger Zone</h3>
       <p class="mu" style="font-size:.82rem;margin-bottom:11px">Reset all votes for this campus and allow voting again. Cannot be undone.</p>
       <button class="btn bd" onclick="resetVotes()">🔄 Reset All Votes</button>
@@ -1267,7 +1267,7 @@ function renderQRTab(){
     '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">General Voting Links</h4>'+
     '<div class="g2" style="margin-bottom:24px">'+
       '<div class="qr-card"><p style="font-weight:600;margin-bottom:2px">🎓 Student Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Student ID sign-in &mdash; own group excluded</p><div id="qov-stu"></div><p class="mono" style="font-size:.69rem;color:var(--a2);word-break:break-all;margin-top:5px">'+ovStu+'</p></div>'+
-      '<div class="qr-card" style="border-color:rgba(155,89,182,.35)"><p style="font-weight:600;margin-bottom:2px;color:var(--t2)">🌐 Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Guest code required &mdash; rates all projects</p><div id="qov-tch"></div><p class="mono" style="font-size:.69rem;color:var(--t2);word-break:break-all;margin-top:5px">'+ovTch+'</p></div>'+
+      '<div class="qr-card" style="border-color:rgba(34,211,238,.35)"><p style="font-weight:600;margin-bottom:2px;color:var(--t2)">🌐 Guest Voting</p><p class="mu" style="font-size:.78rem;margin-bottom:3px">Guest code required &mdash; rates all projects</p><div id="qov-tch"></div><p class="mono" style="font-size:.69rem;color:var(--t2);word-break:break-all;margin-top:5px">'+ovTch+'</p></div>'+
     '</div>'+
     '<h4 style="font-family:var(--fH);margin-bottom:10px;color:var(--a2)">Per-Project QR Codes</h4>'+
     '<div class="g3" id="qr-per-group">'+perG+'</div>';
@@ -1282,7 +1282,7 @@ function renderQRTab(){
 }
 function makeQR(id,url,sz){
   const el=document.getElementById(id); if(!el) return; el.innerHTML='';
-  try{ new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#0d0f14',colorLight:'#f0f2ff',correctLevel:QRCode.CorrectLevel.M}); }
+  try{ new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#0b0a1f',colorLight:'#f4f2ff',correctLevel:QRCode.CorrectLevel.M}); }
   catch(e){ el.innerHTML='<p class="mu" style="font-size:.72rem;word-break:break-all">'+url+'</p>'; }
 }
 function openQRPrintAll(){
@@ -1423,30 +1423,9 @@ async function loadResults(){
     '<span class="badge '+(c.votingOpen?'bgn':'bn')+'">'+(c.votingOpen?'🟢 Open':'⏸ Closed')+'</span>';
 
   const sorted = computeRanking(grps, votes);
-  const MEDAL=['🥇','🥈','🥉'];
 
-  // ——— BEST POSTER BANNER (campus-wide winner) ———
-  const winnerEl=document.getElementById('res-winner');
-  if(sorted.length && sorted[0].n>0){
-    const w=sorted[0];
-    winnerEl.innerHTML=`
-      <div class="winner-banner" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
-        <div style="font-size:2.8rem;line-height:1">🏆</div>
-        <div style="flex:1;min-width:160px">
-          <p class="fl" style="color:var(--go);margin-bottom:3px">🏆 Best Poster — ${esc(c.name)}</p>
-          <h2 style="font-size:1.3rem;color:var(--go);margin-bottom:2px">${esc(w.group.name)}</h2>
-          <p style="font-size:.85rem;color:var(--a2);margin-bottom:6px">📋 ${esc(w.group.projectName)}</p>
-          <p class="mu" style="font-size:.79rem">Highest weighted score campus-wide — guest / judge ratings count more than student ratings (70/30 base), and the side with more votes is trusted more.</p>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:2.2rem;font-weight:800;font-family:var(--fM);color:var(--go);line-height:1">${w.avgT.toFixed(2)}</div>
-          <div class="mu" style="font-size:.73rem">avg / 5</div>
-          <div class="badge bgo" style="margin-top:5px">${w.n} rating${w.n!==1?'s':''}</div>
-        </div>
-      </div>`;
-  } else {
-    winnerEl.innerHTML='';
-  }
+  // ——— PODIUM: 1st, 2nd and 3rd place, picked automatically by weighted score ———
+  document.getElementById('res-winner').innerHTML = podiumHTML(sorted, c.name);
 
   if(!sorted.length){
     document.getElementById('res-list').innerHTML='<div class="card" style="text-align:center;padding:40px"><div style="font-size:2.2rem;margin-bottom:8px">🗳</div><h3>No votes yet</h3></div>';
@@ -1454,13 +1433,13 @@ async function loadResults(){
   }
   document.getElementById('res-list').innerHTML=sorted.map((e,i)=>{
     const isTop=i===0&&e.n>0;
-    return `<div class="card fu" style="margin-bottom:12px;border:${isTop?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.45)':i===2?'1.5px solid rgba(205,127,50,.45)':'1px solid var(--bdr)'};background:${isTop?'rgba(246,195,71,.04)':'var(--sf)'}">
+    return `<div class="card fu" style="margin-bottom:12px;border:${isTop?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.45)':i===2?'1.5px solid rgba(205,127,50,.45)':'1px solid var(--bdr)'};background:${isTop?'rgba(251,191,36,.04)':'var(--sf)'}">
       <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
         <div style="width:46px;height:46px;border-radius:11px;background:var(--s3);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:${i<3&&e.n>0?'1.35rem':'.86rem'};font-family:var(--fM);font-weight:700;color:var(--mu);flex-shrink:0">${i<3&&e.n>0?MEDAL[i]:'#'+(i+1)}</div>
         <div style="flex:1;min-width:165px">
           <div class="flex" style="margin-bottom:2px;flex-wrap:wrap">
             <h3 style="font-size:.95rem">${esc(e.group.name)}</h3>
-            ${isTop?'<span class="badge bgo">🏆 Best Poster</span>':''}
+            ${i<3&&e.n>0?'<span class="badge bgo">'+MEDAL[i]+' '+PLACE[i]+' place</span>':''}
           </div>
           <p style="color:var(--a2);font-size:.81rem;margin-bottom:10px">📋 ${esc(e.group.projectName)}</p>
           <div style="display:flex;flex-direction:column;gap:5px">
@@ -1479,9 +1458,35 @@ async function loadResults(){
   }).join('');
 }
 
+const MEDAL=['🥇','🥈','🥉'];
+const PLACE=['1st','2nd','3rd'];
+// Top three posters that received at least one rating, highest weighted score first.
+// Used by both the campus leaderboard and the semester overview.
+function podiumHTML(sorted, campusName){
+  const top = sorted.filter(e=>e.n>0).slice(0,3);
+  if(!top.length) return '';
+  const tie = top.length>1 && top.some((e,i)=>i>0 && e.avgT.toFixed(2)===top[i-1].avgT.toFixed(2));
+  const col = (e,i)=>`
+    <div style="flex:1;min-width:150px;background:var(--s2);border:${i===0?'2px solid var(--go)':i===1?'1.5px solid rgba(192,192,192,.55)':'1.5px solid rgba(205,127,50,.55)'};border-radius:var(--rS);padding:13px;text-align:center">
+      <div style="font-size:${i===0?'2.4rem':'1.9rem'};line-height:1;margin-bottom:5px">${MEDAL[i]}</div>
+      <p class="fl" style="color:${i===0?'var(--go)':'var(--mu)'};margin-bottom:4px">${PLACE[i]} place</p>
+      <h3 style="font-size:${i===0?'1.08rem':'.95rem'};margin-bottom:2px">${esc(e.group.name)}</h3>
+      <p style="font-size:.8rem;color:var(--a2);margin-bottom:8px">📋 ${esc(e.group.projectName)}</p>
+      <div style="font-size:1.45rem;font-weight:800;font-family:var(--fM);color:${i===0?'var(--go)':'var(--wh)'};line-height:1">${e.avgT.toFixed(2)}</div>
+      <div class="mu" style="font-size:.72rem;margin-top:2px">avg / 5 · ${e.n} rating${e.n!==1?'s':''}</div>
+    </div>`;
+  return `
+    <div class="winner-banner">
+      <p class="fl" style="color:var(--go);margin-bottom:10px">🏆 Best Posters${campusName?' — '+esc(campusName):''}</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">${top.map(col).join('')}</div>
+      ${tie?'<div class="alert ae" style="margin-top:10px;font-size:.8rem">⚠️ Two of the top places have the same score (to 2 decimals). Check the full leaderboard before announcing.</div>':''}
+      <p class="mu" style="font-size:.76rem;margin-top:10px">Ranked automatically by weighted score — guest / judge ratings count more than student ratings (70/30 base), and the side with more votes is trusted more.</p>
+    </div>`;
+}
+
 function rbar(label,val,color){
   const pct=(val/5)*100;
-  return `<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.73rem;color:var(--mu);width:66px;flex-shrink:0">${label}</span><div class="pbar-w"><div class="pbar-f" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}88)"></div></div><span class="mono" style="font-size:.74rem;color:var(--mu);min-width:24px">${val.toFixed(1)}</span></div>`;
+  return `<div style="display:flex;align-items:center;gap:8px"><span style="font-size:.73rem;color:var(--mu);width:66px;flex-shrink:0">${label}</span><div class="pbar-w"><div class="pbar-f" style="width:${pct}%;background:${color}"></div></div><span class="mono" style="font-size:.74rem;color:var(--mu);min-width:24px">${val.toFixed(1)}</span></div>`;
 }
 
 // ——— SEMESTER RESULTS: the Best Poster of each campus, side by side ———
@@ -1520,7 +1525,6 @@ async function loadSemesterResults(){
   wrap.innerHTML = results.map(r => {
     const c = r.campus;
     const w = r.ranked.length && r.ranked[0].n>0 ? r.ranked[0] : null;
-    const runners = r.ranked.filter(e=>e.n>0).slice(1,3);
     return `<div class="card fu" style="margin-bottom:12px;border-color:${w?'var(--go)':'var(--bdr)'}">
       <div class="between" style="margin-bottom:${w?'12px':'0'}">
         <div class="flex"><span style="font-size:1.15rem">&#127963;</span>
@@ -1532,21 +1536,7 @@ async function loadSemesterResults(){
           <button class="btn bs bsm" onclick="openCampusResults('${c.id}')">Full leaderboard &#8594;</button>
         </div>
       </div>
-      ${w ? `
-      <div class="winner-banner" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
-        <div style="font-size:2.2rem;line-height:1">&#127942;</div>
-        <div style="flex:1;min-width:160px">
-          <p class="fl" style="color:var(--go);margin-bottom:3px">Best Poster</p>
-          <h3 style="font-size:1.12rem;color:var(--go);margin-bottom:2px">${esc(w.group.name)}</h3>
-          <p style="font-size:.84rem;color:var(--a2)">&#128203; ${esc(w.group.projectName)}</p>
-          ${runners.length ? `<p class="mu" style="font-size:.77rem;margin-top:6px">Runners-up: ${runners.map((e,i)=>(i?'':'&#129352; ')+(i?'&#129353; ':'')+esc(e.group.name)+' ('+e.avgT.toFixed(2)+')').join(' &middot; ')}</p>` : ''}
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:1.75rem;font-weight:800;font-family:var(--fM);color:var(--go);line-height:1">${w.avgT.toFixed(2)}</div>
-          <div class="mu" style="font-size:.72rem">avg / 5</div>
-          <div class="badge bgo" style="margin-top:5px">${w.n} rating${w.n!==1?'s':''}</div>
-        </div>
-      </div>` : `<p class="mu" style="font-size:.84rem;margin-top:8px">No votes cast yet${r.nGroups?'':' — no groups created either'}.</p>`}
+      ${w ? podiumHTML(r.ranked, '') : `<p class="mu" style="font-size:.84rem;margin-top:8px">No votes cast yet${r.nGroups?'':' — no groups created either'}.</p>`}
     </div>`;
   }).join('');
 }
