@@ -246,7 +246,7 @@ input::placeholder{color:var(--mu)}
         <p id="v-status" style="font-size:.86rem;font-weight:700;font-family:var(--fH);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Pick a project to start</p>
         <p id="v-count" class="mu" style="font-size:.76rem"></p>
       </div>
-      <button class="btn bp" id="v-review" disabled>Review →</button>
+      <button class="btn bp" id="v-review" disabled>Review &amp; submit →</button>
     </div>
   </div>
 </div>
@@ -755,7 +755,7 @@ function refreshProgress(){
   if(st){
     st.textContent = used === 0 ? 'Pick a project to start'
                    : !ready     ? 'Finish scoring all 3 criteria'
-                   :              'Ready to review';
+                   :              'Ready — tap Review & submit';
   }
   if(ct) ct.textContent = done + ' project' + (done === 1 ? '' : 's') + ' fully scored';
 }
