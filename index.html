@@ -1332,67 +1332,121 @@ function openQRPrint(groupId){
   setTimeout(()=>{ makeQR('qps-stu',su,190); makeQR('qps-tch',tu,190); },60);
 }
 
-// ——— WEIGHTED SCORING (confidence-weighted) ———
+// ——— SCORING: empirical-Bayes shrinkage estimator ———
 // Shared by the campus leaderboard and the semester overview so both always
-// rank posters with exactly the same maths (see Score Calculation Formula.docx).
-// Guest / judge ratings count more than student ratings, because judges assess
-// posters more consistently. On top of that, the NUMBER of votes matters: a side
-// backed by many votes is trusted more than one resting on a single lucky vote.
-const TEACHER_WEIGHT = 0.70;   // base share — guests & judges
-const STUDENT_WEIGHT = 0.30;   // base share — students   (these add up to 1)
-// Confidence smoothing constant. A side's confidence = n / (n + K).
-//   1 vote -> 0.25,  3 votes -> 0.50,  10 votes -> 0.77 (with K=3).
-const CONFIDENCE_K = 3;
+// rank posters with exactly the same maths (see "Scoring formula" in README.md).
+//
+// Model (normal–normal):
+//   true quality of poster j      θⱼ ~ N(μ, τ²)
+//   one rating r of poster j      r  ~ N(θⱼ, σ²/w)     w = 1 student, λ guest
+// Bayes estimate of θⱼ (posterior mean), used as the poster's score:
+//   Sⱼ = (m·μ + Σ wᵢ·rᵢⱼ) / (m + nⱼ),   nⱼ = Σ wᵢ,   m = σ²/τ²
+// μ, σ² and τ² are estimated from this campus's own votes, so a poster with
+// only a few ratings is pulled toward the campus average by exactly as much
+// as the data says it should be, and never wins on one or two lucky votes.
+
+// λ — one guest / judge rating counts as this many student ratings.
+// 0.70/0.30 keeps the original 70/30 policy (≈ 2.33).
+const GUEST_WEIGHT = 0.70/0.30;
+// Bounds on the prior strength m (in student-vote units) so tiny or
+// degenerate data sets can't produce an extreme value.
+const PRIOR_MIN = 1;
+const PRIOR_MAX = 50;
+// Used when there isn't enough data to estimate m (fewer than 2 rated posters,
+// or no poster with 2+ ratings yet).
+const PRIOR_DEFAULT = 5;
+const CRITERIA = ['design','novelty','content'];
+
+// A rating counts only when all three criteria are valid 1–5 scores, so a
+// partial (legacy) rating is never averaged in as zeros.
+function validRating(sc){
+  return !!sc && CRITERIA.every(k => typeof sc[k]==='number' && sc[k]>=1 && sc[k]<=5);
+}
+
+// Estimate μ, σ², τ² and m from every rating on the campus.
+function estimatePrior(entries){
+  const rated = entries.filter(e => e.k > 0);
+  let W=0; const sum={design:0,novelty:0,content:0,total:0};
+  rated.forEach(e => e.ratings.forEach(r => {
+    W += r.w; CRITERIA.forEach(c => sum[c] += r.w*r[c]); sum.total += r.w*r.total;
+  }));
+  const mu = {};
+  ['design','novelty','content','total'].forEach(c => mu[c] = W ? sum[c]/W : 0);
+
+  // σ² — pooled within-poster variance of one unit-weight rating.
+  //   E[ Σᵢ wᵢ (rᵢ − x̄ⱼ)² ] = (kⱼ − 1)·σ²  for the weighted mean x̄ⱼ
+  let ss=0, df=0;
+  rated.forEach(e => {
+    e.ratings.forEach(r => ss += r.w*(r.total-e.xbar)*(r.total-e.xbar));
+    df += e.k-1;
+  });
+  const sigma2 = df>0 ? ss/df : null;
+
+  // τ² — between-poster variance of true quality (method of moments):
+  //   Var(x̄ⱼ) = τ² + σ²/nⱼ   ⇒   τ² = Var(x̄ⱼ) − σ²·mean(1/nⱼ)
+  let tau2=null, m=PRIOR_DEFAULT, estimated=false;
+  if(sigma2!==null && rated.length>=2){
+    const J = rated.length;
+    const grand = rated.reduce((s,e)=>s+e.xbar,0)/J;
+    const varMeans = rated.reduce((s,e)=>s+(e.xbar-grand)*(e.xbar-grand),0)/(J-1);
+    const meanInvN = rated.reduce((s,e)=>s+1/e.nW,0)/J;
+    tau2 = varMeans - sigma2*meanInvN;
+    // τ² ≤ 0: no detectable real difference between posters → strongest pull
+    m = tau2>0 ? sigma2/tau2 : PRIOR_MAX;
+    estimated = true;
+  }
+  m = Math.min(PRIOR_MAX, Math.max(PRIOR_MIN, m));
+  return {mu, sigma2, tau2, m, estimated, nRatings:rated.reduce((s,e)=>s+e.k,0)};
+}
 
 function computeRanking(grps, votes){
   const agg={};
-  grps.forEach(g=>agg[g.id]={group:g,stuScores:[],teaScores:[],
-    avgD:0,avgN:0,avgC:0,avgT:0,n:0,nStu:0,nTea:0});
+  grps.forEach(g=>agg[g.id]={group:g, ratings:[],
+    avgD:0,avgN:0,avgC:0,avgT:0,rawT:0,se:0,n:0,k:0,nW:0,nStu:0,nTea:0,xbar:0});
+
+  const add=(gid,sc,isGuest)=>{
+    if(!agg[gid] || !validRating(sc)) return;
+    const r={w:isGuest?GUEST_WEIGHT:1, design:sc.design, novelty:sc.novelty, content:sc.content};
+    r.total=(r.design+r.novelty+r.content)/3;
+    agg[gid].ratings.push(r);
+    isGuest ? agg[gid].nTea++ : agg[gid].nStu++;
+  };
   votes.forEach(v=>{
-    // a guest OR teacher vote counts towards the judge weight; anything else is a student
-    const isTeacher = (v.voterType==='teacher' || v.voterType==='guest');
-    if(v.ratings){
-      Object.entries(v.ratings).forEach(([gid,sc])=>{
-        if(agg[gid]) (isTeacher?agg[gid].teaScores:agg[gid].stuScores).push(sc);
-      });
-    } else if(v.groupId&&agg[v.groupId]){
-      (isTeacher?agg[v.groupId].teaScores:agg[v.groupId].stuScores).push(v.scores||{});
-    }
+    // a guest OR (legacy) teacher vote counts as a judge rating; anything else is a student
+    const isGuest = (v.voterType==='teacher' || v.voterType==='guest');
+    if(v.ratings) Object.entries(v.ratings).forEach(([gid,sc])=>add(gid,sc,isGuest));
+    else if(v.groupId) add(v.groupId, v.scores, isGuest);
   });
-  // average a list of score objects for one criterion
-  const avgOf=(list,key)=> list.length
-    ? list.reduce((s,v)=>s+(v[key]||0),0)/list.length : 0;
-  Object.values(agg).forEach(e=>{
-    e.nStu=e.stuScores.length;
-    e.nTea=e.teaScores.length;
-    e.n=e.nStu+e.nTea;
-    if(!e.n) return;
 
-    // per-criterion averages for each voter group, kept separate
-    const sD=avgOf(e.stuScores,'design'),  tD=avgOf(e.teaScores,'design');
-    const sN=avgOf(e.stuScores,'novelty'), tN=avgOf(e.teaScores,'novelty');
-    const sC=avgOf(e.stuScores,'content'), tC=avgOf(e.teaScores,'content');
+  const entries=Object.values(agg);
+  entries.forEach(e=>{
+    e.k = e.ratings.length;                          // raw number of ratings
+    e.n = e.k;                                       // (shown in the UI)
+    e.nW = e.ratings.reduce((s,r)=>s+r.w,0);         // weighted count nⱼ
+    e.xbar = e.nW ? e.ratings.reduce((s,r)=>s+r.w*r.total,0)/e.nW : 0;
+    e.rawT = e.k ? e.ratings.reduce((s,r)=>s+r.total,0)/e.k : 0;   // plain average, display only
+  });
 
-    // confidence of each side grows with its number of votes (0 votes -> 0)
-    const confTea = e.nTea/(e.nTea+CONFIDENCE_K);
-    const confStu = e.nStu/(e.nStu+CONFIDENCE_K);
+  const P = estimatePrior(entries);
 
-    // effective weight = base share scaled by how trustworthy that side is.
-    // A side with no votes contributes nothing, and because the weights are
-    // re-normalised below the remaining side carries the score honestly
-    // instead of the group being scored as if it got zeros.
-    let wTea = TEACHER_WEIGHT*confTea;
-    let wStu = STUDENT_WEIGHT*confStu;
-    const wSum = wTea+wStu;
-    if(wSum>0){ wTea/=wSum; wStu/=wSum; }   // re-normalise so wTea+wStu = 1
-    e.wTea=wTea; e.wStu=wStu;
-
-    e.avgD = tD*wTea + sD*wStu;
-    e.avgN = tN*wTea + sN*wStu;
-    e.avgC = tC*wTea + sC*wStu;
+  entries.forEach(e=>{
+    if(!e.k) return;
+    // Sⱼ = (m·μ + Σ w·r) / (m + nⱼ), per criterion; the total is their mean,
+    // which equals the same formula applied to the per-rating totals.
+    const shrink = c => (P.m*P.mu[c] + e.ratings.reduce((s,r)=>s+r.w*r[c],0)) / (P.m + e.nW);
+    e.avgD = shrink('design');
+    e.avgN = shrink('novelty');
+    e.avgC = shrink('content');
     e.avgT = (e.avgD+e.avgN+e.avgC)/3;
+    // posterior standard deviation √(σ²/(m+nⱼ)) — how sure we are of the score
+    e.se = P.sigma2!==null ? Math.sqrt(P.sigma2/(P.m+e.nW)) : null;
   });
-  return Object.values(agg).sort((a,b)=>b.avgT-a.avgT);
+
+  // rated posters first, highest score; exact ties go to the poster with more evidence
+  const ranked = entries.sort((a,b)=>
+    ((b.k>0)-(a.k>0)) || (b.avgT-a.avgT) || (b.nW-a.nW));
+  ranked.model = P;
+  return ranked;
 }
 
 // ——— RESULTS ———
@@ -1423,6 +1477,12 @@ async function loadResults(){
     '<span class="badge '+(c.votingOpen?'bgn':'bn')+'">'+(c.votingOpen?'🟢 Open':'⏸ Closed')+'</span>';
 
   const sorted = computeRanking(grps, votes);
+  const M = sorted.model;
+  if(M && M.nRatings){
+    document.getElementById('res-stats').innerHTML +=
+      '<span class="mu" style="font-size:.81rem" title="Campus average μ and prior strength m: every poster is scored as if it also had m ratings at the campus average. m is estimated from the votes (σ²/τ²) once there is enough data.">'+
+      '📐 campus avg μ = '+M.mu.total.toFixed(2)+' · m = '+M.m.toFixed(1)+(M.estimated?'':' (default)')+'</span>';
+  }
 
   // ——— PODIUM: 1st, 2nd and 3rd place, picked automatically by weighted score ———
   document.getElementById('res-winner').innerHTML = podiumHTML(sorted, c.name);
@@ -1450,7 +1510,8 @@ async function loadResults(){
         </div>
         <div style="text-align:center;flex-shrink:0">
           <div style="font-size:1.85rem;font-weight:800;font-family:var(--fM);color:${isTop?'var(--go)':'var(--wh)'};line-height:1;margin-bottom:3px">${e.n?e.avgT.toFixed(2):'&mdash;'}</div>
-          <div class="mu" style="font-size:.73rem">avg / 5</div>
+          <div class="mu" style="font-size:.73rem">score / 5</div>
+          ${e.n?'<div class="mu" style="font-size:.7rem;margin-top:2px">raw avg '+e.rawT.toFixed(2)+(e.se?' · ±'+e.se.toFixed(2):'')+'</div>':''}
           <div class="badge bn" style="margin-top:5px">${e.n} rating${e.n!==1?'s':''}</div>
         </div>
       </div>
@@ -1473,14 +1534,14 @@ function podiumHTML(sorted, campusName){
       <h3 style="font-size:${i===0?'1.08rem':'.95rem'};margin-bottom:2px">${esc(e.group.name)}</h3>
       <p style="font-size:.8rem;color:var(--a2);margin-bottom:8px">📋 ${esc(e.group.projectName)}</p>
       <div style="font-size:1.45rem;font-weight:800;font-family:var(--fM);color:${i===0?'var(--go)':'var(--wh)'};line-height:1">${e.avgT.toFixed(2)}</div>
-      <div class="mu" style="font-size:.72rem;margin-top:2px">avg / 5 · ${e.n} rating${e.n!==1?'s':''}</div>
+      <div class="mu" style="font-size:.72rem;margin-top:2px">score / 5 · ${e.n} rating${e.n!==1?'s':''}</div>
     </div>`;
   return `
     <div class="winner-banner">
       <p class="fl" style="color:var(--go);margin-bottom:10px">🏆 Best Posters${campusName?' — '+esc(campusName):''}</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">${top.map(col).join('')}</div>
       ${tie?'<div class="alert ae" style="margin-top:10px;font-size:.8rem">⚠️ Two of the top places have the same score (to 2 decimals). Check the full leaderboard before announcing.</div>':''}
-      <p class="mu" style="font-size:.76rem;margin-top:10px">Ranked automatically by weighted score — guest / judge ratings count more than student ratings (70/30 base), and the side with more votes is trusted more.</p>
+      <p class="mu" style="font-size:.76rem;margin-top:10px">Ranked by Bayesian score — each guest / judge rating counts as ${GUEST_WEIGHT.toFixed(2)} student ratings, and posters with few ratings are pulled toward the campus average, so a handful of high ratings can't beat a poster many people rated highly.</p>
     </div>`;
 }
 
