@@ -243,7 +243,6 @@ opens the campus. `vote.html` also falls back to a client-side scan if it is eve
 |------|---------|
 | `index.html` | Admin panel — campuses, students, groups, voting control, results |
 | `vote.html` | Voting page — Student ID sign-in or guest code + scoring form |
-| `Score Calculation Formula.docx` | The weighted scoring maths used on the results page |
 
 ---
 
@@ -254,7 +253,70 @@ opens the campus. `vote.html` also falls back to a client-side scan if it is eve
 - Students sign in with their **Student ID**, confirm who they are, and rate **up to 3** projects
 - Students **cannot** rate their own group
 - Guests log in with the Guest Code and can rate every project
-- Guest/judge ratings are weighted more heavily than student ratings (70/30 base,
-  adjusted by how many votes each side cast) — see the formula document
+- Posters are ranked by a **Bayesian score**: guest/judge ratings count 2.33× a student
+  rating, and posters with few ratings are pulled toward the campus average — see
+  [Scoring formula](#-scoring-formula)
 - Results page shows a **🏆 Best Poster** banner per campus, plus a ranked leaderboard
 - Auto-refresh every 15 seconds in live mode
+
+---
+
+## 📐 Scoring formula
+
+The results page ranks posters with an **empirical-Bayes shrinkage estimator** — the
+statistically optimal way to compare averages built from very different numbers of votes.
+
+**Model.** Each poster *j* has an unknown true quality θⱼ. Posters vary around the campus
+average, and each rating is a noisy measurement of θⱼ:
+
+```
+θⱼ ~ N(μ, τ²)            r ~ N(θⱼ, σ²/w)        w = 1 (student), λ (guest / judge)
+```
+
+**Score.** The poster's score is the posterior mean of θⱼ:
+
+```
+        m·μ + Σ wᵢ·rᵢⱼ
+Sⱼ  =  ────────────────        nⱼ = Σ wᵢ ,    m = σ² / τ²
+           m + nⱼ
+```
+
+| Symbol | Meaning |
+|---|---|
+| rᵢⱼ | a rating = mean of Design, Novelty, Content (1–5) |
+| wᵢ, λ | rating weight; a guest rating counts as λ = 0.70/0.30 ≈ 2.33 student ratings |
+| nⱼ | weighted number of ratings the poster received |
+| μ | weighted mean of every rating on the campus |
+| σ² | rating noise — how much voters disagree about the same poster |
+| τ² | real spread in quality between posters |
+| m | prior strength: the poster is scored as if it also had *m* ratings at μ |
+
+**Estimating m from the votes** (method of moments, recomputed every time results load):
+
+```
+σ̂² = Σⱼ Σᵢ wᵢ (rᵢⱼ − x̄ⱼ)²  /  Σⱼ (kⱼ − 1)            pooled within-poster variance
+τ̂² = Var(x̄ⱼ) − σ̂² · mean(1/nⱼ)                       between-poster variance
+m  = clamp(σ̂² / τ̂², 1, 50)
+```
+
+x̄ⱼ is the poster's weighted average and kⱼ its raw number of ratings. If τ̂² ≤ 0 (no
+detectable real difference between posters) m = 50. Until there are at least two rated
+posters and one poster with 2+ ratings, m = 5.
+
+**Properties**
+
+- Sⱼ is a weighted average of μ and the poster's ratings, so it always stays within 1–5.
+- With no ratings, Sⱼ = μ; as ratings accumulate, Sⱼ → the poster's own average.
+- One rating moves the score only 1/(m+1) of the way from μ, so a single 5★ vote can't
+  beat a poster that many people rated highly.
+- It is the minimum-mean-squared-error estimate of true quality under the model.
+- Per-criterion bars use the same formula; their mean equals the total score.
+- Ties are broken by the weighted number of ratings; partial ratings are ignored, never
+  counted as zeros.
+
+The leaderboard shows each poster's **score** (used for ranking), its **raw avg** and **±**
+(the posterior standard deviation √(σ²/(m+nⱼ))). The header shows μ and the m in use.
+
+**Tuning** (top of the scoring block in `index.html`): `GUEST_WEIGHT` (λ), `PRIOR_MIN`,
+`PRIOR_MAX`, `PRIOR_DEFAULT`.
+
